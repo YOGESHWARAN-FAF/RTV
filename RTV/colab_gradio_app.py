@@ -3459,13 +3459,25 @@ def main():
                     from gradio.tunneling import setup_tunnel
                 import secrets
                 share_token = secrets.token_urlsafe(32)
-                try:
-                    tunnel_url = setup_tunnel(local_host='127.0.0.1', local_port=args.port, share_token=share_token)
-                except TypeError:
-                    try:
-                        tunnel_url = setup_tunnel(local_host='127.0.0.1', local_port=args.port, share_server_address=None)
-                    except TypeError:
-                        tunnel_url = setup_tunnel(local_host='127.0.0.1', local_port=args.port)
+                import inspect
+                sig = inspect.signature(setup_tunnel)
+                call_args = []
+                for name, param in sig.parameters.items():
+                    if name in ('local_host', 'host'):
+                        call_args.append('127.0.0.1')
+                    elif name in ('local_port', 'port'):
+                        call_args.append(args.port)
+                    elif name == 'share_token':
+                        call_args.append(share_token)
+                    elif name == 'share_server_address':
+                        call_args.append(None)
+                    elif name == 'share_server_tls_certificate':
+                        call_args.append(None)
+                    else:
+                        if param.default is not inspect.Parameter.empty:
+                            continue
+                        call_args.append(None)
+                tunnel_url = setup_tunnel(*call_args)
                 print('\n' + '=' * 70)
                 print(f'  👉 PUBLIC GRADIO LIVE LINK: {tunnel_url}')
                 print(f'  👉 LOCAL BROWSER LINK:      http://localhost:{args.port}')
