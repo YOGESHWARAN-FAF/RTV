@@ -3449,6 +3449,34 @@ def main():
 
     app = gr.mount_gradio_app(fastapi_app, demo, **filtered_kwargs)
 
+    if getattr(args, 'share', False):
+        def _launch_share_tunnel():
+            time.sleep(2.5)
+            try:
+                try:
+                    from gradio.networking import setup_tunnel
+                except ImportError:
+                    from gradio.tunneling import setup_tunnel
+                import secrets
+                share_token = secrets.token_urlsafe(32)
+                try:
+                    tunnel_url = setup_tunnel(local_host='127.0.0.1', local_port=args.port, share_token=share_token)
+                except TypeError:
+                    try:
+                        tunnel_url = setup_tunnel(local_host='127.0.0.1', local_port=args.port, share_server_address=None)
+                    except TypeError:
+                        tunnel_url = setup_tunnel(local_host='127.0.0.1', local_port=args.port)
+                print('\n' + '=' * 70)
+                print(f'  👉 PUBLIC GRADIO LIVE LINK: {tunnel_url}')
+                print(f'  👉 LOCAL BROWSER LINK:      http://localhost:{args.port}')
+                print('=' * 70 + '\n')
+            except Exception as e:
+                print(f'\n[RTV-Colab] Note on public link: {e}')
+                print(f'[RTV-Colab] You can connect locally via http://localhost:{args.port}')
+                print(f'[RTV-Colab] Or from your PC using SSH tunneling: ssh -L {args.port}:localhost:{args.port} administrator@miphi-aidaptiv\n')
+
+        threading.Thread(target=_launch_share_tunnel, daemon=True).start()
+
 
 
     print(f"[RTV-Colab] Starting ASGI Server with Live WebSocket Mirror on port {args.port}...")
