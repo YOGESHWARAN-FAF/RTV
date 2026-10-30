@@ -1,0 +1,43 @@
+# Instructions on Training a New Garment Checkpoint
+
+## Items Required
+- A camera capable of recording video in 4K resolution (most smartphones are sufficient).
+- The garment intended for virtual try-on.
+- A person to wear the garment during recording.
+
+## Step 1
+Recording a video of a person wearing the garment following the instruction of [this paper](https://arxiv.org/abs/2506.10468).
+The predefined poses can be find [here](assets/pose_guidance/symmetric.pdf).
+Please note that you don't need to strictly follow the predefined poses (the more diverse the poses, the better).
+We provide an example of a recorded video [here](https://huggingface.co/datasets/wuzaiqiang/Per-GarmentDataset/blob/main/example_video.mp4).
+
+## Step 2
+Performing garment segmentation to the recorded video.
+There are many available methods, we recommend [this repository](https://github.com/heyoeyo/muggled_sam), which requires only minimal interaction to achieve desirable garment segmentation results.
+
+<img src="assets/demo/Screenshot.png" alt="Description" height="500" />
+
+
+Exporting the segmentation results as a tar file. We provide an example of a tar file [here](https://huggingface.co/datasets/wuzaiqiang/Per-GarmentDataset/blob/main/example_video/000_obj1_0_to_2135_frames.tar).
+
+## Step 3
+Create a directory and extract the tar file inside this directory. Run the following command to generate a per-garment dataset.
+
+```
+python DatasetGeneration/upperbody_dataset_generation.py --video_path <path to video> --mask_dir <path to mask dir> --dataset_name <name of this garment>
+```
+A dataset will be generated under `./PerGarmentDatasets`.
+
+## Step 4
+Train your own garment checkpoint using this command:
+```
+python Training/upperbody_training.py  --model pix2pixHD_RGBA --input_nc 6 --output_nc=4 --batchSize 4 --img_size 512 --dataset_path ./PerGarmentDatasets/<dataset name> --name <garment name> --niter 80 --niter_decay 80
+```
+A checkpoint will be generated under `./checkpoints`.
+
+## Step 5
+Run this command to use your trained checkpoint for virtual try-on. We provide an example video as input [here](https://huggingface.co/datasets/wuzaiqiang/Per-GarmentDataset/blob/main/example_input.mp4).
+```
+python Inference/upperbody_inference.py --input_video <input video path> --garment_name <garment name>
+```
+The output video will be saved as `./output.mp4`.

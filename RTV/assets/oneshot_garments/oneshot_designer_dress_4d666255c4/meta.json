@@ -1,0 +1,156 @@
+{
+  "garment_id": "oneshot_designer_dress_4d666255c4",
+  "display_name": "Designer Dress",
+  "category": "fullbody",
+  "bbox": [
+    38,
+    0,
+    74,
+    138
+  ],
+  "aspect_ratio": 1.864864864864865,
+  "landmarks": {
+    "neck_top": [
+      259.44594594594594,
+      44.13333333333333
+    ],
+    "neck_center": [
+      259.44594594594594,
+      68.33333333333333
+    ],
+    "shoulder_left": [
+      127.60810810810811,
+      119.66666666666667
+    ],
+    "shoulder_right": [
+      266.77027027027026,
+      119.66666666666667
+    ],
+    "armpit_left": [
+      101.68,
+      222.33333333333331
+    ],
+    "armpit_right": [
+      186.2027027027027,
+      222.33333333333331
+    ],
+    "cuff_left": [
+      80.0,
+      241.76666666666668
+    ],
+    "cuff_right": [
+      329.02702702702703,
+      241.76666666666668
+    ],
+    "chest_center": [
+      197.18918918918916,
+      222.33333333333331
+    ],
+    "waist_left": [
+      116.62162162162161,
+      332.3333333333333
+    ],
+    "waist_right": [
+      292.4054054054054,
+      332.3333333333333
+    ],
+    "waist_center": [
+      204.5135135135135,
+      332.3333333333333
+    ],
+    "hem_left": [
+      167.8918918918919,
+      508.3333333333333
+    ],
+    "hem_right": [
+      204.51351351351352,
+      508.3333333333333
+    ],
+    "hem_center": [
+      186.2027027027027,
+      508.3333333333333
+    ]
+  },
+  "metadata": {
+    "created_at": 1792989971.6639621,
+    "processing_time_ms": 5.23,
+    "original_resolution": [
+      200,
+      200
+    ],
+    "bbox": [
+      38,
+      0,
+      74,
+      138
+    ],
+    "aspect_ratio": 1.865,
+    "background_removal": "Auto-Segmentation (Border Color Distance + Morphological Solid)",
+    "category": "fullbody",
+    "cached": false,
+    "norm_landmarks": {
+      "neck_top": [
+        259.44594594594594,
+        44.13333333333333
+      ],
+      "neck_center": [
+        259.44594594594594,
+        68.33333333333333
+      ],
+      "shoulder_left": [
+        127.60810810810811,
+        119.66666666666667
+      ],
+      "shoulder_right": [
+        266.77027027027026,
+        119.66666666666667
+      ],
+      "armpit_left": [
+        101.68,
+        222.33333333333331
+      ],
+      "armpit_right": [
+        186.2027027027027,
+        222.33333333333331
+      ],
+      "cuff_left": [
+        80.0,
+        241.76666666666668
+      ],
+      "cuff_right": [
+        329.02702702702703,
+        241.76666666666668
+      ],
+      "chest_center": [
+        197.18918918918916,
+        222.33333333333331
+      ],
+      "waist_left": [
+        116.62162162162161,
+        332.3333333333333
+      ],
+      "waist_right": [
+        292.4054054054054,
+        332.3333333333333
+      ],
+      "waist_center": [
+        204.5135135135135,
+        332.3333333333333
+      ],
+      "hem_left": [
+        167.8918918918919,
+        508.3333333333333
+      ],
+      "hem_right": [
+        204.51351351351352,
+        508.3333333333333
+      ],
+      "hem_center": [
+        186.2027027027027,
+        508.3333333333333
+      ]
+    },
+    "disclaimer": "Single front-view garment: unseen back & side fabric physics are approximated."
+  },
+  "cache_dir": "D:\\projects\\company-projects\\RTV\\RTV\\assets\\oneshot_garments\\oneshot_designer_dress_4d666255c4"
+}

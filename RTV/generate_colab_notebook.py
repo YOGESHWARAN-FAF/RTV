@@ -1,0 +1,233 @@
+import json
+
+notebook = {
+    "nbformat": 4,
+    "nbformat_minor": 2,
+    "metadata": {
+        "colab": {
+            "name": "RTV_Google_Colab.ipynb",
+            "provenance": [],
+            "collapsed_sections": [],
+            "gpuType": "T4"
+        },
+        "kernelspec": {
+            "name": "python3",
+            "display_name": "Python 3"
+        },
+        "language_info": {
+            "name": "python"
+        },
+        "accelerator": "GPU"
+    },
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m1"},
+            "source": [
+                "# 🧥 RTV: Real-Time Virtual Try-On Studio (Google Colab Edition)\n",
+                "\n",
+                "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com)\n",
+                "\n",
+                "**RTV** is a real-time virtual try-on system powered by:\n",
+                "- **ROMP / BEV** for 3D body motion estimation\n",
+                "- **DensePose** for body-to-garment surface UV coordinates\n",
+                "- **PyOpenGL Offscreen Renderer** (Headless EGL on Linux cloud GPUs)\n",
+                "- **Pix2PixHD RGBA Generator** for realistic fabric texture and drape\n",
+                "- **Lucas–Kanade Optical Flow Tracker** for 25–30 FPS live motion tracking\n",
+                "- **Interactive Gradio Web Studio** supporting live webcam streaming, video upload, garment switcher, and telemetry HUD!\n",
+                "\n",
+                "---\n",
+                "### ⚙️ Requirements:\n",
+                "- **Runtime**: Set Colab runtime to **GPU** (`Runtime` -> `Change runtime type` -> select `T4 GPU`, `L4 GPU`, or `A100 GPU`)."
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m2"},
+            "source": [
+                "## 1. Verify GPU Acceleration"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {"id": "c1"},
+            "outputs": [],
+            "source": [
+                "!nvidia-smi\n",
+                "import torch\n",
+                "print(f\"PyTorch: {torch.__version__} | CUDA Available: {torch.cuda.is_available()}\")\n",
+                "if torch.cuda.is_available():\n",
+                "    print(f\"Active GPU: {torch.cuda.get_device_name(0)} ({torch.cuda.get_device_properties(0).total_memory / (1024**3):.1f} GB VRAM)\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m3"},
+            "source": [
+                "## 2. Mount Google Drive & Set Up Project Repository\n",
+                "If your `RTV` code or checkpoints (`RTV.zip` or folder) are stored in your Google Drive, mount Drive below."
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {"id": "c2"},
+            "outputs": [],
+            "source": [
+                "import os\n",
+                "\n",
+                "# Option A: Mount Google Drive if your RTV repository or RTV.zip is in Drive\n",
+                "try:\n",
+                "    from google.colab import drive\n",
+                "    drive.mount('/content/drive')\n",
+                "    print(\"✓ Google Drive mounted!\")\n",
+                "except Exception as e:\n",
+                "    print(\"Drive mount skipped or running outside Colab:\", e)\n",
+                "\n",
+                "# Option B: If you uploaded RTV.zip to Drive (e.g. MyDrive/RTV.zip), uncomment below:\n",
+                "# if os.path.exists('/content/drive/MyDrive/RTV.zip'):\n",
+                "#     !unzip -q /content/drive/MyDrive/RTV.zip -d /content/\n",
+                "#     %cd /content/RTV\n",
+                "\n",
+                "# Ensure working directory is set to RTV\n",
+                "if os.path.exists('/content/RTV'):\n",
+                "    os.chdir('/content/RTV')\n",
+                "print(\"Active Directory:\", os.getcwd())"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m4"},
+            "source": [
+                "## 3. Install System Graphics & Headless EGL Dependencies"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {"id": "c3"},
+            "outputs": [],
+            "source": [
+                "!apt-get update -qq\n",
+                "!apt-get install -y -qq \\\n",
+                "    libegl1-mesa-dev \\\n",
+                "    libgles2-mesa-dev \\\n",
+                "    libgl1-mesa-glx \\\n",
+                "    libosmesa6-dev \\\n",
+                "    xvfb \\\n",
+                "    ffmpeg \\\n",
+                "    libglfw3-dev > /dev/null 2>&1\n",
+                "print(\"✓ Headless graphics packages installed!\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m5"},
+            "source": [
+                "## 4. Install Python Dependencies & Detectron2"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {"id": "c4"},
+            "outputs": [],
+            "source": [
+                "!pip install -q pyopengl pyopengl-accelerate trimesh simple-romp gradio==6.30.0 opencv-python scipy gdown\n",
+                "if os.path.exists('requirements.txt'):\n",
+                "    !pip install -q -r requirements.txt\n",
+                "\n",
+                "# Install Detectron2 matching Colab PyTorch & CUDA\n",
+                "!pip install -q 'git+https://github.com/facebookresearch/detectron2.git'\n",
+                "print(\"✓ All Python dependencies installed successfully!\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m6"},
+            "source": [
+                "## 5. Configure Headless OpenGL Environment"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {"id": "c5"},
+            "outputs": [],
+            "source": [
+                "import os\n",
+                "os.environ[\"PYOPENGL_PLATFORM\"] = \"egl\"\n",
+                "os.environ[\"QT_QPA_PLATFORM\"] = \"offscreen\"\n",
+                "print(\"✓ Headless EGL and Offscreen platform configured!\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m7"},
+            "source": [
+                "## 6. 🚀 Launch the Interactive Web Try-On Studio\n",
+                "Running the cell below launches the **RTV Interactive Web Studio**.\n",
+                "\n",
+                "Features:\n",
+                "- **Live Webcam Try-On**: Stream your webcam directly from your browser to Colab with real-time cloth motion!\n",
+                "- **Video Try-On**: Upload any video or test the bundled sample clip.\n",
+                "- **Garment Selector**: Choose between Winter Puffer Coat, Hanfu Silk Dress, or tailored Upper-Body garments.\n",
+                "- **Telemetry HUD**: Displays real-time Cam FPS, ML latency, Tracking FPS, and body orientation.\n",
+                "\n",
+                "> **Note:** Gradio will generate a public **`https://xxxx.gradio.live`** link. Click it to open the studio in a full browser tab or on your phone!"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {"id": "c6"},
+            "outputs": [],
+            "source": [
+                "# Launch Gradio with public shareable link\n",
+                "!python colab_gradio_app.py --share"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {"id": "m8"},
+            "source": [
+                "## 7. Batch Process Video Headlessly (Optional CLI Mode)\n",
+                "If you want to render an entire video without keeping the Gradio web UI open, execute this cell:"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {"id": "c7"},
+            "outputs": [],
+            "source": [
+                "from colab_gradio_app import ColabTryOnEngine\n",
+                "from IPython.display import Video, display\n",
+                "\n",
+                "engine = ColabTryOnEngine()\n",
+                "\n",
+                "input_video = \"./assets/sample_video.mp4\"\n",
+                "garment = \"Winter Puffer Coat (Full-Body)\"\n",
+                "\n",
+                "print(f\"Processing video: {input_video} with {garment}...\")\n",
+                "out_video_path, msg = engine.process_video_file(\n",
+                "    video_path=input_video,\n",
+                "    garment_label=garment,\n",
+                "    max_frames=150,  # Number of frames to process\n",
+                "    show_hud=True\n",
+                ")\n",
+                "print(msg)\n",
+                "print(f\"Resulting video saved to: {out_video_path}\")\n",
+                "\n",
+                "# Display output directly in notebook cell\n",
+                "display(Video(out_video_path, embed=True, width=640))"
+            ]
+        }
+    ]
+}
+
+with open("D:/projects/RTV/RTV/RTV_Google_Colab.ipynb", "w", encoding="utf-8") as f:
+    json.dump(notebook, f, indent=2)
+
+print("Created RTV_Google_Colab.ipynb successfully!")

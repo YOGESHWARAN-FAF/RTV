@@ -1,0 +1,156 @@
+{
+  "garment_id": "oneshot_try-on_shirt_a9d4fd4c51",
+  "display_name": "Try-On Shirt",
+  "category": "upperbody",
+  "bbox": [
+    257,
+    391,
+    502,
+    400
+  ],
+  "aspect_ratio": 0.796812749003984,
+  "landmarks": {
+    "neck_top": [
+      255.55179282868525,
+      72.488
+    ],
+    "neck_center": [
+      255.55179282868525,
+      89.72
+    ],
+    "shoulder_left": [
+      126.0199203187251,
+      126.5175
+    ],
+    "shoulder_right": [
+      387.77290836653384,
+      126.5175
+    ],
+    "armpit_left": [
+      81.19920318725099,
+      199.215
+    ],
+    "armpit_right": [
+      420.0438247011952,
+      199.215
+    ],
+    "cuff_left": [
+      54.30677290836654,
+      213.03650000000002
+    ],
+    "cuff_right": [
+      438.8685258964143,
+      213.03650000000002
+    ],
+    "chest_center": [
+      256.89641434262944,
+      199.215
+    ],
+    "waist_left": [
+      85.0,
+      279.99
+    ],
+    "waist_right": [
+      427.0,
+      279.99
+    ],
+    "waist_center": [
+      243.898406374502,
+      279.99
+    ],
+    "hem_left": [
+      139.46613545816734,
+      403.84499999999997
+    ],
+    "hem_right": [
+      364.46613545816734,
+      403.84499999999997
+    ],
+    "hem_center": [
+      251.96613545816734,
+      403.84499999999997
+    ]
+  },
+  "metadata": {
+    "created_at": 1792989919.858974,
+    "processing_time_ms": 240.25,
+    "original_resolution": [
+      1024,
+      1024
+    ],
+    "bbox": [
+      257,
+      391,
+      502,
+      400
+    ],
+    "aspect_ratio": 0.797,
+    "background_removal": "Auto-Segmentation (Border Color Distance + Morphological Solid)",
+    "category": "upperbody",
+    "cached": false,
+    "norm_landmarks": {
+      "neck_top": [
+        255.55179282868525,
+        72.488
+      ],
+      "neck_center": [
+        255.55179282868525,
+        89.72
+      ],
+      "shoulder_left": [
+        126.0199203187251,
+        126.5175
+      ],
+      "shoulder_right": [
+        387.77290836653384,
+        126.5175
+      ],
+      "armpit_left": [
+        81.19920318725099,
+        199.215
+      ],
+      "armpit_right": [
+        420.0438247011952,
+        199.215
+      ],
+      "cuff_left": [
+        54.30677290836654,
+        213.03650000000002
+      ],
+      "cuff_right": [
+        438.8685258964143,
+        213.03650000000002
+      ],
+      "chest_center": [
+        256.89641434262944,
+        199.215
+      ],
+      "waist_left": [
+        85.0,
+        279.99
+      ],
+      "waist_right": [
+        427.0,
+        279.99
+      ],
+      "waist_center": [
+        243.898406374502,
+        279.99
+      ],
+      "hem_left": [
+        139.46613545816734,
+        403.84499999999997
+      ],
+      "hem_right": [
+        364.46613545816734,
+        403.84499999999997
+      ],
+      "hem_center": [
+        251.96613545816734,
+        403.84499999999997
+      ]
+    },
+    "disclaimer": "Single front-view garment: unseen back & side fabric physics are approximated."
+  },
+  "cache_dir": "D:\\projects\\company-projects\\RTV\\RTV\\assets\\oneshot_garments\\oneshot_try-on_shirt_a9d4fd4c51"
+}

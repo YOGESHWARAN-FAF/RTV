@@ -1,0 +1,49 @@
+# ==============================================================================
+# RTV (Real-Time Virtual Try-On) - Git Ignore
+# ==============================================================================
+
+# Virtual Environments
+venv/
+env/
+.env/
+ENV/
+*.venv/
+
+# Heavy Deep Learning Checkpoints (>100MB exceeds GitHub push limit)
+# Note: Use 'download_models.bat' or 'python download_models.py' to acquire weights
+*.pth
+*.pt
+*.ckpt
+*.bin
+RTV/rtv_ckpts/*/*.pth
+RTV/checkpoints/
+checkpoints/
+
+# Pre-packaged Archives
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Python Bytecode, Caches & Gradio Temporary Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.gradio/
+.pytest_cache/
+.ipynb_checkpoints/
+RTV/scratch/
+RTV/rollback_backup/
+RTV/rollback_point_v2/
+
+# Training Datasets
+RTV/PerGarmentDatasets/
+
+# OS and Editor Temporary Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.log
+*.tmp

@@ -1,0 +1,156 @@
+{
+  "garment_id": "oneshot_screenshot_2026-10-24_111914_dc8d07d68e",
+  "display_name": "Screenshot 2026-10-24 111914",
+  "category": "fullbody",
+  "bbox": [
+    0,
+    6,
+    512,
+    771
+  ],
+  "aspect_ratio": 1.505859375,
+  "landmarks": {
+    "neck_top": [
+      170.71875,
+      44.276005188067444
+    ],
+    "neck_center": [
+      170.71875,
+      68.69001297016862
+    ],
+    "shoulder_left": [
+      66.375,
+      120.53696498054474
+    ],
+    "shoulder_right": [
+      219.28125,
+      120.53696498054474
+    ],
+    "armpit_left": [
+      111.65625,
+      223.5745784695201
+    ],
+    "armpit_right": [
+      279.0,
+      223.5745784695201
+    ],
+    "cuff_left": [
+      82.125,
+      243.13203631647212
+    ],
+    "cuff_right": [
+      284.25,
+      243.13203631647212
+    ],
+    "chest_center": [
+      142.828125,
+      223.5745784695201
+    ],
+    "waist_left": [
+      130.03125,
+      337.1128404669261
+    ],
+    "waist_right": [
+      267.84375,
+      337.1128404669261
+    ],
+    "waist_center": [
+      198.9375,
+      337.1128404669261
+    ],
+    "hem_left": [
+      135.9375,
+      512.342412451362
+    ],
+    "hem_right": [
+      245.53125,
+      512.342412451362
+    ],
+    "hem_center": [
+      190.734375,
+      512.342412451362
+    ]
+  },
+  "metadata": {
+    "created_at": 1792992846.7725065,
+    "processing_time_ms": 877.28,
+    "original_resolution": [
+      512,
+      777
+    ],
+    "bbox": [
+      0,
+      6,
+      512,
+      771
+    ],
+    "aspect_ratio": 1.506,
+    "background_removal": "Auto-Segmentation (Border Color Distance + Morphological Solid)",
+    "category": "fullbody",
+    "cached": false,
+    "norm_landmarks": {
+      "neck_top": [
+        170.71875,
+        44.276005188067444
+      ],
+      "neck_center": [
+        170.71875,
+        68.69001297016862
+      ],
+      "shoulder_left": [
+        66.375,
+        120.53696498054474
+      ],
+      "shoulder_right": [
+        219.28125,
+        120.53696498054474
+      ],
+      "armpit_left": [
+        111.65625,
+        223.5745784695201
+      ],
+      "armpit_right": [
+        279.0,
+        223.5745784695201
+      ],
+      "cuff_left": [
+        82.125,
+        243.13203631647212
+      ],
+      "cuff_right": [
+        284.25,
+        243.13203631647212
+      ],
+      "chest_center": [
+        142.828125,
+        223.5745784695201
+      ],
+      "waist_left": [
+        130.03125,
+        337.1128404669261
+      ],
+      "waist_right": [
+        267.84375,
+        337.1128404669261
+      ],
+      "waist_center": [
+        198.9375,
+        337.1128404669261
+      ],
+      "hem_left": [
+        135.9375,
+        512.342412451362
+      ],
+      "hem_right": [
+        245.53125,
+        512.342412451362
+      ],
+      "hem_center": [
+        190.734375,
+        512.342412451362
+      ]
+    },
+    "disclaimer": "Single front-view garment: unseen back & side fabric physics are approximated."
+  },
+  "cache_dir": "D:\\projects\\company-projects\\RTV\\RTV\\assets\\oneshot_garments\\oneshot_screenshot_2026-10-24_111914_dc8d07d68e"
+}
