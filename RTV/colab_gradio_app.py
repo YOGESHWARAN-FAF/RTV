@@ -1330,7 +1330,19 @@ RTV_LIVE_MIRROR_JS = r'''
 
                 video.srcObject = stream;
 
-                await video.play();
+                try {
+
+                    await video.play();
+
+                } catch (playErr) {
+
+                    if (playErr.name !== 'AbortError') {
+
+                        console.warn('Video play warning:', playErr);
+
+                    }
+
+                }
 
                 video.style.display = 'block';
 
