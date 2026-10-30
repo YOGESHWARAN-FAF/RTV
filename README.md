@@ -91,3 +91,4 @@ Model weights (`*.pth`, ~700 MB each) are hosted on Hugging Face. To download th
 ├── package_project.bat      # Portable zip packager
 └── PROJECT_DOCUMENTATION.md # Full technical documentation
 ```
+
