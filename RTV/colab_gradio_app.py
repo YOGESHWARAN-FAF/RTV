@@ -140,51 +140,97 @@ def get_orientation_str(yaw_deg):
 
 
 def draw_calibration_hud(frame, progress, yaw_angle, joints_2d=None, status_text="Stand in camera view for 3D body calibration"):
-
+    if frame is None:
+        return frame
     h, w = frame.shape[:2]
-
     overlay = frame.copy()
 
+    # Semi-transparent top and bottom banner
     cv2.rectangle(overlay, (0, 0), (w, 115), (10, 12, 18), -1)
-
     cv2.rectangle(overlay, (0, h - 55), (w, h), (10, 12, 18), -1)
 
-
-
     orient_str = get_orientation_str(yaw_angle)
-
     pct = int(progress * 100)
-
     title = f"[ 3D BODY MOTION CALIBRATION: {pct}% ]"
+    cv2.putText(overlay, title, (25, 32),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.72, (0, 255, 255), 2, cv2.LINE_AA)
 
-    cv2.putText(overlay, title, (25, 32), cv2.FONT_HERSHEY_SIMPLEX, 0.72, (0, 255, 255), 2, cv2.LINE_AA)
-
-
-
+    # Progress bar
     bar_w = min(450, w - 50)
-
     bar_x = 25
-
     bar_y = 44
-
     cv2.rectangle(overlay, (bar_x, bar_y), (bar_x + bar_w, bar_y + 10), (50, 50, 60), 1)
-
     fill_w = int(bar_w * progress)
-
     if fill_w > 0:
-
         cv2.rectangle(overlay, (bar_x, bar_y), (bar_x + fill_w, bar_y + 10), (0, 255, 120), -1)
 
+    # Anatomical Joint Tracking & AR Skeleton Overlay
+    sh_locked = False
+    hip_locked = False
+    hand_locked = False
 
+    if joints_2d is not None and len(joints_2d) >= 22:
+        bones = [
+            (16, 18), (18, 20),  # Left arm: shoulder -> elbow -> wrist
+            (17, 19), (19, 21),  # Right arm: shoulder -> elbow -> wrist
+            (16, 12), (17, 12),  # Shoulders to neck
+            (12, 15),            # Neck to head
+            (16, 1), (17, 2),    # Shoulders to hips
+            (1, 2),              # Pelvis / Hips
+            (1, 4), (4, 7),      # Left leg: hip -> knee -> ankle
+            (2, 5), (5, 8),      # Right leg: hip -> knee -> ankle
+        ]
+        for j1, j2 in bones:
+            pt1 = (int(np.clip(joints_2d[j1][0], 0, w - 1)), int(np.clip(joints_2d[j1][1], 0, h - 1)))
+            pt2 = (int(np.clip(joints_2d[j2][0], 0, w - 1)), int(np.clip(joints_2d[j2][1], 0, h - 1)))
+            cv2.line(overlay, pt1, pt2, (0, 255, 120), 2, cv2.LINE_AA)
+
+        key_landmarks = [
+            (16, (0, 255, 0), "L.Shoulder"),
+            (17, (0, 255, 0), "R.Shoulder"),
+            (1, (0, 200, 255), "L.Hip"),
+            (2, (0, 200, 255), "R.Hip"),
+            (20, (255, 0, 255), "L.Hand"),
+            (21, (255, 0, 255), "R.Hand"),
+            (12, (0, 255, 255), "Neck"),
+        ]
+        for j_idx, col, name in key_landmarks:
+            pt = (int(np.clip(joints_2d[j_idx][0], 0, w - 1)), int(np.clip(joints_2d[j_idx][1], 0, h - 1)))
+            cv2.circle(overlay, pt, 6, col, -1, cv2.LINE_AA)
+            cv2.circle(overlay, pt, 11, col, 1, cv2.LINE_AA)
+
+        sh_dist = np.hypot(joints_2d[16][0] - joints_2d[17][0], joints_2d[16][1] - joints_2d[17][1])
+        hip_dist = np.hypot(joints_2d[1][0] - joints_2d[2][0], joints_2d[1][1] - joints_2d[2][1])
+        sh_locked = sh_dist > 25
+        hip_locked = hip_dist > 15
+        hand_locked = (joints_2d[20][1] > 20) and (joints_2d[21][1] > 20)
+    else:
+        # AR Silhouette Guide when joints not yet regressed
+        cx, cy = w // 2, int(h * 0.48)
+        head_r = int(min(w, h) * 0.12)
+        cv2.ellipse(overlay, (cx, cy - int(head_r * 1.1)), (head_r, int(head_r * 1.35)), 0, 0, 360, (0, 215, 255), 1, cv2.LINE_AA)
+        sh_w = int(min(w, h) * 0.35)
+        cv2.ellipse(overlay, (cx, cy + head_r), (sh_w, int(head_r * 1.5)), 0, 180, 360, (0, 215, 255), 1, cv2.LINE_AA)
+
+    badge_sh = "[✓] SHOULDERS: LOCKED" if sh_locked else "[ ] SHOULDERS: MAPPING..."
+    badge_hip = "[✓] HIPS: LOCKED" if hip_locked else "[ ] HIPS: MAPPING..."
+    badge_hnd = "[✓] HANDS: LOCKED" if hand_locked else "[ ] HANDS: MAPPING..."
+    col_sh = (0, 255, 120) if sh_locked else (160, 160, 160)
+    col_hip = (0, 255, 120) if hip_locked else (160, 160, 160)
+    col_hnd = (0, 255, 120) if hand_locked else (160, 160, 160)
+
+    cv2.putText(overlay, badge_sh, (25, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.46, col_sh, 1, cv2.LINE_AA)
+    cv2.putText(overlay, badge_hip, (220, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.46, col_hip, 1, cv2.LINE_AA)
+    cv2.putText(overlay, badge_hnd, (380, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.46, col_hnd, 1, cv2.LINE_AA)
 
     status_str = f"Angle: {orient_str} | Status: {status_text}"
-
     cv2.putText(overlay, status_str, (25, 102), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (220, 220, 220), 1, cv2.LINE_AA)
 
+    hint_text = "Real-Time 3D Virtual Try-On Mirror | Stand so shoulders & torso are in view"
+    cv2.putText(overlay, hint_text, (25, h - 18), cv2.FONT_HERSHEY_SIMPLEX, 0.46, (0, 255, 255), 1, cv2.LINE_AA)
+
     cv2.addWeighted(overlay, 0.82, frame, 0.18, 0, frame)
-
-
-
+    return frame
 
 
 # ============================================================================
@@ -651,6 +697,9 @@ class ColabTryOnEngine:
 
         self.profiler.record_display_frame(self.frame_seq, t_loop_start, time.monotonic())
 
+        if display_bgr is None:
+            display_bgr = frame_bgr.copy()
+
         # Render Telemetry HUD
         if show_hud:
             display_bgr = self.profiler.draw_hud(
@@ -1003,7 +1052,7 @@ RTV_LIVE_MIRROR_JS = r'''
     let rtvWs = null;
     let rtvRunning = false;
     let rtvInFlight = 0;
-    const MAX_IN_FLIGHT = 2; // Strict 2-frame backpressure for zero-latency 30 FPS mirror
+    const MAX_IN_FLIGHT = 3; // Strict 2-frame backpressure for zero-latency 30 FPS mirror
 
     let rtvSendTimer = null;
     let rtvDispCount = 0;
@@ -1201,7 +1250,13 @@ RTV_LIVE_MIRROR_JS = r'''
 
     function rtvContinuousSendTick() {
         if (!rtvRunning || !rtvWs || rtvWs.readyState !== WebSocket.OPEN) return;
-        if (rtvInFlight >= MAX_IN_FLIGHT) return; // Strict backpressure throttling
+        if (rtvInFlight >= MAX_IN_FLIGHT) {
+            if (performance.now() - rtvSendTime > 150) {
+                rtvInFlight = 0; // Auto-recover from lost frame
+            } else {
+                return;
+            }
+        }
 
         const video = document.getElementById('rtv_cam_preview');
         if (!video || video.readyState < 2) return;
@@ -1382,6 +1437,66 @@ RTV_LIVE_MIRROR_JS = r'''
             canvas.style.transform = checkbox.checked ? 'scaleX(-1)' : 'none';
         }
     };
+
+    // Desktop GUI Keyboard Shortcuts Parity (from demo.py)
+    window.addEventListener('keydown', function(e) {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+
+        const k = e.key.toUpperCase();
+        if (k === 'C') {
+            e.preventDefault();
+            window.rtvRecalibrate();
+        } else if (k === 'M' || e.key === 'Tab') {
+            e.preventDefault();
+            const newMode = (window.rtvActiveMode === 'LIVE') ? 'SYNC' : 'LIVE';
+            window.rtvSetMode(newMode);
+        } else if (k === 'G') {
+            e.preventDefault();
+            const chk = document.getElementById('rtv_ws_skeleton');
+            if (chk) { chk.checked = !chk.checked; window.rtvSendConfig(); }
+        } else if (k === 'H') {
+            e.preventDefault();
+            const chk = document.getElementById('rtv_ws_hud');
+            if (chk) { chk.checked = !chk.checked; window.rtvSendConfig(); }
+        } else if (k === 'S') {
+            e.preventDefault();
+            window.rtvCaptureSnapshot();
+        } else if (e.code === 'Space') {
+            e.preventDefault();
+            if (rtvRunning) {
+                window.rtvStopMirror();
+            } else {
+                window.rtvStartMirror();
+            }
+        } else if (k === 'F') {
+            e.preventDefault();
+            const c = document.getElementById('rtv_mirror_canvas');
+            if (c) {
+                if (!document.fullscreenElement) {
+                    c.requestFullscreen?.().catch(()=>{});
+                } else {
+                    document.exitFullscreen?.().catch(()=>{});
+                }
+            }
+        } else if (k === 'R') {
+            e.preventDefault();
+            const c = document.getElementById('rtv_mirror_canvas');
+            const chk = document.getElementById('rtv_ws_mirror');
+            if (c) {
+                const isMirrored = c.style.transform === 'scaleX(-1)';
+                c.style.transform = isMirrored ? 'none' : 'scaleX(-1)';
+                if (chk) chk.checked = !isMirrored;
+            }
+        } else if (e.key >= '1' && e.key <= '9') {
+            const cards = Array.from(document.querySelectorAll('.rtv-wardrobe-card'));
+            const idx = parseInt(e.key, 10) - 1;
+            if (idx >= 0 && idx < cards.length) {
+                e.preventDefault();
+                const targetLabel = cards[idx].getAttribute('data-label');
+                if (targetLabel) window.rtvSelectGarment(targetLabel);
+            }
+        }
+    });
 
     console.log('[RTV] Studio Mirror Engine Initialized & Attached to Window!');
 })();
