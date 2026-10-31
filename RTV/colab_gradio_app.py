@@ -28,6 +28,17 @@ import os
 
 import sys
 
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 import time
 
 import argparse
@@ -3307,9 +3318,9 @@ def main():
 
     print("  HOW TO ACCESS IN YOUR BROWSER:")
 
-    print(f"  👉 Local URL:   http://localhost:{args.port}  or  http://127.0.0.1:{args.port}")
+    print(f"  -> Local URL:   http://localhost:{args.port}  or  http://127.0.0.1:{args.port}")
 
-    print("  ⚠️ NOTE: Do NOT use 0.0.0.0 in your browser! Use http://localhost:7860")
+    print("  [NOTE] Do NOT use 0.0.0.0 in your browser! Use http://localhost:7860")
 
     print(f"  PyTorch CUDA: {torch.cuda.is_available()} ({torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU'})")
 
