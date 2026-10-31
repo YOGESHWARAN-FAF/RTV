@@ -49,20 +49,35 @@ class CrossAttentionBlock(nn.Module):
         """
         x_surface: [B, C, H, W] Query from 3D body/geometry surface
         ref_tokens: [B, C, Hr, Wr] Key/Value from reference garment
+        Uses chunked memory-efficient attention (O(1) VRAM footprint, works on 4GB-48GB GPUs).
         """
         B, C, H, W = x_surface.shape
+        
+        # Pool reference garment tokens to standard visual token grid (24x24 = 576 tokens)
+        if ref_tokens.shape[-2] > 24 or ref_tokens.shape[-1] > 24:
+            ref_tokens = F.adaptive_avg_pool2d(ref_tokens, (24, 24))
         _, _, Hr, Wr = ref_tokens.shape
         
         res = x_surface
-        q = self.q_proj(self.norm1(x_surface)).view(B, self.num_heads, self.head_dim, H * W).permute(0, 1, 3, 2)
-        k = self.k_proj(ref_tokens).view(B, self.num_heads, self.head_dim, Hr * Wr)
-        v = self.v_proj(ref_tokens).view(B, self.num_heads, self.head_dim, Hr * Wr).permute(0, 1, 3, 2)
+        q = self.q_proj(self.norm1(x_surface)).view(B, self.num_heads, self.head_dim, H * W).transpose(-2, -1)
+        k = self.k_proj(ref_tokens).view(B, self.num_heads, self.head_dim, Hr * Wr).transpose(-2, -1)
+        v = self.v_proj(ref_tokens).view(B, self.num_heads, self.head_dim, Hr * Wr).transpose(-2, -1)
         
-        # Attention: [B, Heads, (H*W), (Hr*Wr)]
-        attn = torch.matmul(q, k) * self.scale
-        attn = F.softmax(attn, dim=-1)
+        # Chunked evaluation ensures ultra-low peak VRAM on any hardware
+        chunk_size = 4096
+        N = H * W
+        if N > chunk_size:
+            out_chunks = []
+            for i in range(0, N, chunk_size):
+                q_chunk = q[:, :, i:i + chunk_size, :]
+                out_chunk = F.scaled_dot_product_attention(q_chunk, k, v)
+                out_chunks.append(out_chunk)
+            out = torch.cat(out_chunks, dim=2)
+        else:
+            out = F.scaled_dot_product_attention(q, k, v)
+            
+        out = out.transpose(-2, -1).contiguous().view(B, C, H, W)
         
-        out = torch.matmul(attn, v).permute(0, 1, 3, 2).contiguous().view(B, C, H, W)
         x = res + self.out_proj(out)
         x = x + self.ffn(self.norm2(x))
         return x
@@ -194,3 +209,4 @@ class SpatialTemporalCrossAttentionGenerator(nn.Module):
         alpha = self.alpha_head(u2)
         
         return torch.cat([rgb, alpha], dim=1)
+

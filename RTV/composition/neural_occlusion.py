@@ -112,10 +112,9 @@ class NeuralForegroundOcclusionEngine:
                 # Soft clamping: allow subtle 20% ambient warmth/coolness transfer
                 gains[c] = np.clip(1.0 + (raw_ratio - 1.0) * 0.35, 0.80, 1.25)
                 
-        # Apply channel gains
-        h, w = target_bgr.shape[:2]
-        harmonized = cv2.multiply(target_bgr.astype(np.float32), gains.reshape(1, 1, 3))
-        return np.clip(harmonized, 0, 255).astype(np.uint8)
+        # Apply channel gains cleanly via numpy broadcast
+        harmonized = np.clip(target_bgr.astype(np.float32) * gains.reshape(1, 1, 3), 0, 255).astype(np.uint8)
+        return harmonized
 
     def composite(self, scene_bgr, target_bgr, alpha_matte,
                   wrist_l=None, wrist_r=None, chin_pt=None, neck_pt=None,
@@ -204,3 +203,4 @@ def neural_smooth_overlay(raw_img, raw_target, raw_alpha,
         ambient_match=ambient_match,
         feather_ksize=feather_ksize
     )
+
