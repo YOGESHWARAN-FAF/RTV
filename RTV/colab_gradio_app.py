@@ -28,6 +28,8 @@ import os
 
 import sys
 
+import asyncio
+
 if hasattr(sys.stdout, 'reconfigure'):
     try:
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -3277,6 +3279,8 @@ def launch_cloud_tunnel(port=7860):
 def main():
 
     import json
+
+    import asyncio
 
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
