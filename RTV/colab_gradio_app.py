@@ -184,6 +184,66 @@ def draw_calibration_hud(frame, progress, yaw_angle, joints_2d=None, status_text
 
 GARMENT_CATALOG = {
 
+    "✨ 3D Neural Puffer Coat (PBNF)": {
+
+        "type": "neural_stream",
+
+        "id": "puffer_coat",
+
+        "preview": "./assets/garment_images/coat_seq_preview.jpg",
+
+        "desc": "Next-Gen 3D Physics-Informed Neural Garment Field with real-time dynamic wrinkles."
+
+    },
+
+    "✨ 3D Neural Biker Jacket (PBNF)": {
+
+        "type": "neural_stream",
+
+        "id": "leather_jacket",
+
+        "preview": "./assets/garment_images/lab_03_white_bg.jpg",
+
+        "desc": "Photorealistic biker jacket with secondary drape inertia and learned occlusion."
+
+    },
+
+    "✨ 3D Neural Silk Dress (PBNF)": {
+
+        "type": "neural_stream",
+
+        "id": "silk_dress",
+
+        "preview": "./assets/garment_images/han_seq_preview.jpg",
+
+        "desc": "Flowing silk evening gown with continuous full-body drape."
+
+    },
+
+    "✨ 3D Neural Athletic Hoodie (PBNF)": {
+
+        "type": "neural_stream",
+
+        "id": "hoodie",
+
+        "preview": "./assets/garment_images/lab_04_white_bg.jpg",
+
+        "desc": "Athletic fleece hoodie with high-speed arm tracking and zero hand popping."
+
+    },
+
+    "✨ 3D Neural Formal Suit (PBNF)": {
+
+        "type": "neural_stream",
+
+        "id": "tailored_suit",
+
+        "preview": "./assets/garment_images/lab_07_white_bg.jpg",
+
+        "desc": "Classic executive business blazer with structured lapels and depth shading."
+
+    },
+
     "Winter Puffer Coat (Full-Body)": {
 
         "type": "fullbody",
@@ -564,6 +624,16 @@ class ColabTryOnEngine:
 
             return self.upperbody_processor
 
+    def get_neural_stream_processor(self, target_id="puffer_coat", custom_img=None):
+        with self.lock:
+            if getattr(self, 'neural_stream_processor', None) is None:
+                print(f"[RTV-Colab] Initializing NeuralVirtualTryOnStreamProcessor ({target_id})...")
+                from VITON.viton_neural_stream import NeuralVirtualTryOnStreamProcessor
+                self.neural_stream_processor = NeuralVirtualTryOnStreamProcessor(target_id)
+            else:
+                self.neural_stream_processor.set_target_garment(target_id, custom_img)
+            return self.neural_stream_processor
+
 
 
     def set_active_garment(self, label):
@@ -620,16 +690,14 @@ class ColabTryOnEngine:
 
             try:
 
-                if g_type == "fullbody":
-
-                    proc = self.get_fullbody_processor(g_id)
-
+                if g_type == "neural_stream":
+                    proc = self.get_neural_stream_processor(g_id)
                     patch = proc.get_garment_patch(frame_to_process, isRGB=False)
-
+                elif g_type == "fullbody":
+                    proc = self.get_fullbody_processor(g_id)
+                    patch = proc.get_garment_patch(frame_to_process, isRGB=False)
                 else:
-
                     proc = self.get_upperbody_processor(g_id)
-
                     patch = proc.get_garment_patch(frame_to_process, isRGB=False)
 
 
@@ -767,21 +835,16 @@ class ColabTryOnEngine:
                 
 
                 try:
-
-                    if g_type == "fullbody":
-
+                    if g_type == "neural_stream":
+                        proc = self.get_neural_stream_processor(g_id)
+                        display_bgr = proc.composite_garment(display_bgr, patch)
+                    elif g_type == "fullbody":
                         proc = self.get_fullbody_processor(g_id)
-
                         display_bgr = proc.composite_garment(display_bgr, patch)
-
                     else:
-
                         proc = self.get_upperbody_processor(g_id)
-
                         display_bgr = proc.composite_garment(display_bgr, patch)
-
                 except Exception as e:
-
                     pass
 
 
@@ -905,13 +968,11 @@ class ColabTryOnEngine:
         t0 = time.perf_counter()
 
         try:
-
-            if g_type == "fullbody":
-
+            if g_type == "neural_stream":
+                proc = self.get_neural_stream_processor(g_id)
+            elif g_type == "fullbody":
                 proc = self.get_fullbody_processor(g_id)
-
             else:
-
                 proc = self.get_upperbody_processor(g_id)
 
 
@@ -1036,16 +1097,13 @@ class ColabTryOnEngine:
 
 
 
-        if g_type == "fullbody":
-
+        if g_type == "neural_stream":
+            proc = self.get_neural_stream_processor(g_id)
+        elif g_type == "fullbody":
             proc = self.get_fullbody_processor(g_id)
-
         elif g_type == "upperbody":
-
             proc = self.get_upperbody_processor(g_id)
-
         else:
-
             proc = None
 
 
@@ -1317,53 +1375,45 @@ RTV_LIVE_MIRROR_JS = r'''
 
 
         try {
+            if (video && video.srcObject) {
+                try {
+                    video.srcObject.getTracks().forEach(t => t.stop());
+                } catch(e){}
+                video.srcObject = null;
+            }
 
             const stream = await navigator.mediaDevices.getUserMedia({
-
                 video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-
                 audio: false
-
             });
 
             if (video) {
-
                 video.srcObject = stream;
-
                 try {
-
                     await video.play();
-
                 } catch (playErr) {
-
-                    if (playErr.name !== 'AbortError') {
-
-                        console.warn('Video play warning:', playErr);
-
+                    if (playErr.name !== 'AbortError' && !playErr.message.includes('interrupted')) {
+                        console.warn('Video play notice:', playErr);
                     }
-
                 }
-
                 video.style.display = 'block';
-
             }
 
             if (placeholderCam) placeholderCam.style.display = 'none';
 
         } catch (err) {
-
-            alert('Camera access error: ' + err.message + '\n\nPlease click the camera icon in your browser address bar to allow camera access.');
-
-            if (statusBadge) {
-
-                statusBadge.innerText = '❌ Camera Permission Denied';
-
-                statusBadge.style.color = '#f87171';
-
+            if (err.name === 'AbortError' || (err.message && err.message.includes('interrupted'))) {
+                console.warn('Benign camera stream interrupt:', err);
+                if (video) video.style.display = 'block';
+                if (placeholderCam) placeholderCam.style.display = 'none';
+            } else {
+                alert('Camera access error: ' + err.message + '\n\nPlease click the camera icon in your browser address bar to allow camera access.');
+                if (statusBadge) {
+                    statusBadge.innerText = '❌ Camera Permission Denied';
+                    statusBadge.style.color = '#f87171';
+                }
+                return;
             }
-
-            return;
-
         }
 
 
