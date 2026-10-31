@@ -195,3 +195,4 @@ if __name__ == "__main__":
     parser.add_argument("--iterations", type=int, default=50)
     args = parser.parse_args()
     run_comprehensive_benchmarks(iterations=args.iterations)
+

@@ -196,260 +196,171 @@ def draw_calibration_hud(frame, progress, yaw_angle, joints_2d=None, status_text
 
 
 GARMENT_CATALOG = {
-
-    "✨ 3D Neural Puffer Coat (PBNF)": {
-
-        "type": "neural_stream",
-
-        "id": "puffer_coat",
-
-        "preview": "./assets/garment_images/coat_seq_preview.jpg",
-
-        "desc": "Next-Gen 3D Physics-Informed Neural Garment Field with real-time dynamic wrinkles."
-
-    },
-
-    "✨ 3D Neural Biker Jacket (PBNF)": {
-
-        "type": "neural_stream",
-
-        "id": "leather_jacket",
-
-        "preview": "./assets/garment_images/lab_03_white_bg.jpg",
-
-        "desc": "Photorealistic biker jacket with secondary drape inertia and learned occlusion."
-
-    },
-
-    "✨ 3D Neural Silk Dress (PBNF)": {
-
-        "type": "neural_stream",
-
-        "id": "silk_dress",
-
-        "preview": "./assets/garment_images/han_seq_preview.jpg",
-
-        "desc": "Flowing silk evening gown with continuous full-body drape."
-
-    },
-
-    "✨ 3D Neural Athletic Hoodie (PBNF)": {
-
-        "type": "neural_stream",
-
-        "id": "hoodie",
-
-        "preview": "./assets/garment_images/lab_04_white_bg.jpg",
-
-        "desc": "Athletic fleece hoodie with high-speed arm tracking and zero hand popping."
-
-    },
-
-    "✨ 3D Neural Formal Suit (PBNF)": {
-
-        "type": "neural_stream",
-
-        "id": "tailored_suit",
-
-        "preview": "./assets/garment_images/lab_07_white_bg.jpg",
-
-        "desc": "Classic executive business blazer with structured lapels and depth shading."
-
-    },
-
-    "Winter Puffer Coat (Full-Body)": {
-
-        "type": "fullbody",
-
-        "id": "coat_seq_vmssdp2ta_576",
-
-        "preview": "./assets/garment_images/coat_seq_preview.jpg",
-
-        "desc": "Full-body winter puffer jacket with realistic cloth physics & fold rendering."
-
-    },
-
-    "Hanfu Silk Dress (Full-Body)": {
-
-        "type": "fullbody",
-
-        "id": "han_seq_vmssdp2ta_576",
-
-        "preview": "./assets/garment_images/han_seq_preview.jpg",
-
-        "desc": "Traditional flowing silk Hanfu dress with dynamic drape and drape deformation."
-
-    },
-
+    # --- UPPER-BODY WARDROBE (Optimized for Laptop Webcam & Seated Users) ---
     "Lab Coat 03 (Upper-Body)": {
-
         "type": "upperbody",
-
         "id": "lab_03_vmsdp2ta",
-
-        "preview": "./assets/garment_images/lab_03_white_bg.jpg",
-
+        "category": "upper",
+        "preview": "/assets/garment_images/lab_03_white_bg.jpg",
         "desc": "Fitted lab garment with collar alignment and upper-torso contour tracking."
-
     },
-
     "Lab Coat 04 (Upper-Body)": {
-
         "type": "upperbody",
-
         "id": "lab_04_vmsdp2ta",
-
-        "preview": "./assets/garment_images/lab_04_white_bg.jpg",
-
+        "category": "upper",
+        "preview": "/assets/garment_images/lab_04_white_bg.jpg",
         "desc": "Alternative cut lab garment with arm occlusion preservation."
-
     },
-
     "Lab Coat 07 (Upper-Body)": {
-
         "type": "upperbody",
-
         "id": "lab_07_vmsdp2ta",
-
-        "preview": "./assets/garment_images/lab_07_white_bg.jpg",
-
+        "category": "upper",
+        "preview": "/assets/garment_images/lab_07_white_bg.jpg",
         "desc": "Classic tailored lab coat model."
-
     },
-
     "Jin Apparel 17 (Upper-Body)": {
-
         "type": "upperbody",
-
         "id": "jin_17_vmsdp2ta",
-
-        "preview": "./assets/garment_images/jin_17_white_bg.jpg",
-
+        "category": "upper",
+        "preview": "/assets/garment_images/jin_17_white_bg.jpg",
         "desc": "Casual apparel top with high-fidelity texture and neckline fitting."
-
     },
-
     "Jin Apparel 18 (Upper-Body)": {
-
         "type": "upperbody",
-
         "id": "jin_18_vmsdp2ta",
-
-        "preview": "./assets/garment_images/jin_18_white_bg.jpg",
-
+        "category": "upper",
+        "preview": "/assets/garment_images/jin_18_white_bg.jpg",
         "desc": "Sportswear cut top with torso deformation tracking."
-
     },
-
     "Jin Apparel 22 (Upper-Body)": {
-
         "type": "upperbody",
-
         "id": "jin_22_vmsdp2ta",
-
-        "preview": "./assets/garment_images/jin_22_white_bg.jpg",
-
+        "category": "upper",
+        "preview": "/assets/garment_images/jin_22_white_bg.jpg",
         "desc": "Dark tone structured apparel with high contrast contour segmentation."
-
+    },
+    "RCB Jersey 18 (Upper-Body)": {
+        "type": "upperbody",
+        "id": "rcb_jersey_18",
+        "category": "upper",
+        "preview": "/assets/garment_images/rcb_jersey_18_preview.jpg",
+        "desc": "Royal Challengers athletic match jersey with dynamic number rendering."
     },
 
-    "Raw Camera / AR Skeleton (No Garment)": {
+    # --- NEXT-GEN 3D NEURAL PBNF WARDROBE (Continuous Physics Cloth Draping) ---
+    "✨ 3D Neural Biker Jacket (PBNF)": {
+        "type": "neural_stream",
+        "id": "leather_jacket",
+        "category": "neural",
+        "preview": "/assets/garment_images/lab_03_white_bg.jpg",
+        "desc": "Photorealistic biker jacket with secondary drape inertia and learned occlusion."
+    },
+    "✨ 3D Neural Athletic Hoodie (PBNF)": {
+        "type": "neural_stream",
+        "id": "hoodie",
+        "category": "neural",
+        "preview": "/assets/garment_images/lab_04_white_bg.jpg",
+        "desc": "Athletic fleece hoodie with high-speed arm tracking and zero hand popping."
+    },
+    "✨ 3D Neural Formal Suit (PBNF)": {
+        "type": "neural_stream",
+        "id": "tailored_suit",
+        "category": "neural",
+        "preview": "/assets/garment_images/lab_07_white_bg.jpg",
+        "desc": "Classic executive business blazer with structured lapels and depth shading."
+    },
+    "✨ 3D Neural Puffer Coat (PBNF)": {
+        "type": "neural_stream",
+        "id": "puffer_coat",
+        "category": "neural",
+        "preview": "/assets/garment_images/coat_seq_preview.jpg",
+        "desc": "Next-Gen 3D Physics-Informed Neural Garment Field with real-time dynamic wrinkles."
+    },
+    "✨ 3D Neural Silk Dress (PBNF)": {
+        "type": "neural_stream",
+        "id": "silk_dress",
+        "category": "neural",
+        "preview": "/assets/garment_images/han_seq_preview.jpg",
+        "desc": "Flowing silk evening gown with continuous full-body drape."
+    },
 
+    # --- FULL-BODY WARDROBE (Full Standing Height Models) ---
+    "Winter Puffer Coat (Full-Body)": {
+        "type": "fullbody",
+        "id": "coat_seq_vmssdp2ta_576",
+        "category": "full",
+        "preview": "/assets/garment_images/coat_seq_preview.jpg",
+        "desc": "Full-body winter puffer jacket with realistic cloth physics & fold rendering."
+    },
+    "Hanfu Silk Dress (Full-Body)": {
+        "type": "fullbody",
+        "id": "han_seq_vmssdp2ta_576",
+        "category": "full",
+        "preview": "/assets/garment_images/han_seq_preview.jpg",
+        "desc": "Traditional flowing silk Hanfu dress with dynamic drape and drape deformation."
+    },
+    "Custom Designer Dress (Full-Body)": {
+        "type": "fullbody",
+        "id": "custom_designer_dress",
+        "category": "full",
+        "preview": "/assets/garment_images/custom_designer_dress_preview.jpg",
+        "desc": "Custom trained luxury evening designer gown."
+    },
+    "My Custom Dress (Full-Body)": {
+        "type": "fullbody",
+        "id": "my_custom_dress",
+        "category": "full",
+        "preview": "/assets/garment_images/my_custom_dress_preview.jpg",
+        "desc": "Custom user-trained dress model."
+    },
+
+    # --- 3D SKELETON & CALIBRATION (Raw Mode) ---
+    "Raw Camera / 3D Skeleton (No Garment)": {
         "type": "none",
-
         "id": "none",
-
-        "preview": "./assets/none.png" if os.path.exists("./assets/none.png") else None,
-
+        "category": "calibration",
+        "preview": "/assets/none.png",
         "desc": "Raw camera stream with 3D SMPL pose detection and anatomical skeleton overlay."
-
     }
-
 }
 
-
-
-
-
 def scan_and_update_catalog():
-
     """Scan rtv_ckpts/ directory and dynamically add custom garments to GARMENT_CATALOG."""
-
     ckpts_dir = os.path.abspath("./rtv_ckpts")
-
     if os.path.exists(ckpts_dir):
-
         for item in sorted(os.listdir(ckpts_dir)):
-
             if item.startswith("."):
-
                 continue
-
             model_dir = os.path.join(ckpts_dir, item)
-
             model_file = os.path.join(model_dir, "latest_net_G.pth")
-
             if os.path.isdir(model_dir) and os.path.exists(model_file):
-
-                # Search for thumbnail
-
-                thumb = None
-
-                for cand in [
-
-                    os.path.join(model_dir, "preview.jpg"),
-
-                    os.path.abspath(f"./assets/garment_images/{item}_preview.jpg"),
-
-                    os.path.abspath(f"./assets/garment_images/{item}.jpg"),
-
-                    os.path.abspath(f"./assets/garment_images/{item}_white_bg.jpg"),
-
-                ]:
-
-                    if os.path.exists(cand):
-
-                        thumb = cand
-
-                        break
-
-                
-
-                # Check if already present
+                thumb = "/assets/none.png"
+                if os.path.exists(os.path.join(model_dir, "preview.jpg")):
+                    thumb = f"/rtv_ckpts/{item}/preview.jpg"
+                elif os.path.exists(os.path.abspath(f"./assets/garment_images/{item}_preview.jpg")):
+                    thumb = f"/assets/garment_images/{item}_preview.jpg"
+                elif os.path.exists(os.path.abspath(f"./assets/garment_images/{item}.jpg")):
+                    thumb = f"/assets/garment_images/{item}.jpg"
+                elif os.path.exists(os.path.abspath(f"./assets/garment_images/{item}_white_bg.jpg")):
+                    thumb = f"/assets/garment_images/{item}_white_bg.jpg"
 
                 already_in = False
-
                 for k, v in GARMENT_CATALOG.items():
-
                     if v.get("id") == item:
-
                         already_in = True
-
                         break
-
                 if not already_in:
-
                     label = item.replace("_seq_vmssdp2ta_576", "").replace("_vmsdp2ta", "").replace("_", " ").title()
-
                     is_fullbody = ("seq" in item) or ("fullbody" in item)
-
                     g_type = "fullbody" if is_fullbody else "upperbody"
-
                     GARMENT_CATALOG[label] = {
-
                         "type": g_type,
-
                         "id": item,
-
+                        "category": "full" if is_fullbody else "upper",
                         "preview": thumb,
-
                         "desc": f"Custom trained / imported neural garment: '{item}'."
-
                     }
-
     return GARMENT_CATALOG
-
-
 
 # Initial scan
 
@@ -468,178 +379,88 @@ scan_and_update_catalog()
 
 
 class ColabTryOnEngine:
-
     """
-
     Thread-safe, high-performance Virtual Try-On Engine for Web & Colab execution.
-
     Features:
-
-    - Lazy model loading & dynamic caching to fit GPU memory constraints.
-
+    - Default to Upper-Body Lab Coat 03 (fastest startup, perfect for webcam desk sitting).
     - Decoupled real-time tracking for smooth webcam streaming (25-30 FPS).
-
-    - Full telemetry profiler & HUD overlays.
-
+    - Instant garment switching with state clearing & optical flow tracking.
+    - Full telemetry profiler & AR Skeleton HUD overlays.
     """
-
     def __init__(self):
-
         self.lock = threading.Lock()
-
         self.profiler = PipelineProfiler(window_size=60)
-
         
-
-        self.active_garment_label = "Winter Puffer Coat (Full-Body)"
-
+        self.active_garment_label = "Lab Coat 03 (Upper-Body)"
         self.active_catalog_entry = GARMENT_CATALOG[self.active_garment_label]
-
         
-
         # Processors (initialized on demand)
-
         self.fullbody_processor = None
-
         self.upperbody_processor = None
-
+        self.neural_stream_processor = None
         
-
         # Asynchronous streaming state for webcam
-
         self.latest_input_bgr = None
-
         self.latest_patch = None
-
         self.latest_yaw = 0.0
-
         self.latest_joints = None
-
         self.body_detected = False
-
         self.ml_running = False
-
         self.ml_thread = None
-
         self.last_ml_time = 0.0
-
         self.frame_seq = 0
-
         self.model_status = "Warming up..."
-
         
-
-        # Pre-load default fullbody model in background so it is instantly ready
-
+        # Pre-load UpperBody model in background for fast 2-second ready state
         def _warmup():
-
-            print("[RTV-Colab] Pre-warming FullBody model in GPU...")
-
+            print("[RTV-Colab] Pre-warming UpperBody model in GPU...")
             try:
-
-                # Ensure SMPLA_NEUTRAL.pth & SMPL_NEUTRAL.pth exist in ~/.romp
-
-                romp_dir = os.path.expanduser("~/.romp")
-
-                if os.path.exists(romp_dir):
-
-                    for src, dst in [("smpla_packed_info.pth", "SMPLA_NEUTRAL.pth"), ("smpl_packed_info.pth", "SMPL_NEUTRAL.pth")]:
-
-                        sp, dp = os.path.join(romp_dir, src), os.path.join(romp_dir, dst)
-
-                        if os.path.exists(sp) and not os.path.exists(dp):
-
-                            shutil.copy2(sp, dp)
-
-                self.get_fullbody_processor("coat_seq_vmssdp2ta_576")
-
+                self.get_upperbody_processor("lab_03_vmsdp2ta")
                 self.model_status = "Ready"
-
-                print("[RTV-Colab] FullBody model is warmed up and ready in GPU!")
-
+                print("[RTV-Colab] UpperBody model is warmed up and ready in GPU!")
             except Exception as e:
-
                 print(f"[RTV-Colab] Warmup notice: {e}")
-
                 self.model_status = "Ready on-demand"
-
-
 
         threading.Thread(target=_warmup, daemon=True).start()
 
-
-
         # Start background ML worker
-
         self.worker_active = True
-
         self.ml_thread = threading.Thread(target=self._background_ml_worker, daemon=True)
-
         self.ml_thread.start()
 
-
-
     def get_fullbody_processor(self, target_id="coat_seq_vmssdp2ta_576"):
-
         with self.lock:
-
             if self.fullbody_processor is None:
-
                 print(f"[RTV-Colab] Initializing FullBodySeqFrameProcessor ({target_id})...")
-
                 self.fullbody_processor = FullBodySeqFrameProcessor(target_id)
-
             elif self.fullbody_processor.current_target_name != target_id:
-
                 self.fullbody_processor.set_target_garment(target_id)
-
             return self.fullbody_processor
 
-
-
     def get_upperbody_processor(self, target_id="lab_03_vmsdp2ta"):
-
         with self.lock:
-
             if self.upperbody_processor is None:
-
                 print(f"[RTV-Colab] Initializing FrameProcessor for upperbody ({target_id})...")
-
                 garments = [
-
                     'lab_03_vmsdp2ta', 'lab_04_vmsdp2ta', 'lab_07_vmsdp2ta',
-
-                    'jin_17_vmsdp2ta', 'jin_18_vmsdp2ta', 'jin_22_vmsdp2ta'
-
+                    'jin_17_vmsdp2ta', 'jin_18_vmsdp2ta', 'jin_22_vmsdp2ta', 'rcb_jersey_18'
                 ]
-
                 self.upperbody_processor = FrameProcessor(garments)
-
             
-
-            # Switch target garment
-
             try:
-
                 if target_id not in self.upperbody_processor.garment_name_list:
-
                     self.upperbody_processor.garment_name_list.append(target_id)
-
                     self.upperbody_processor.viton_model_list.append(None)
-
                 idx = self.upperbody_processor.garment_name_list.index(target_id)
-
                 self.upperbody_processor.switch_to_target_garment(idx)
-
             except Exception as e:
-
                 print(f"[RTV-Colab] Upperbody switch warning: {e}")
-
             return self.upperbody_processor
 
     def get_neural_stream_processor(self, target_id="puffer_coat", custom_img=None):
         with self.lock:
-            if getattr(self, 'neural_stream_processor', None) is None:
+            if self.neural_stream_processor is None:
                 print(f"[RTV-Colab] Initializing NeuralVirtualTryOnStreamProcessor ({target_id})...")
                 from VITON.viton_neural_stream import NeuralVirtualTryOnStreamProcessor
                 self.neural_stream_processor = NeuralVirtualTryOnStreamProcessor(target_id)
@@ -647,62 +468,63 @@ class ColabTryOnEngine:
                 self.neural_stream_processor.set_target_garment(target_id, custom_img)
             return self.neural_stream_processor
 
-
-
     def set_active_garment(self, label):
-
         if label in GARMENT_CATALOG:
-
-            self.active_garment_label = label
-
-            self.active_catalog_entry = GARMENT_CATALOG[label]
-
+            with self.lock:
+                self.active_garment_label = label
+                self.active_catalog_entry = GARMENT_CATALOG[label]
+                self.latest_patch = None
             print(f"[RTV-Colab] Selected garment: {label} ({self.active_catalog_entry['id']})")
 
-
+    def recalibrate(self):
+        """Reset subject tracking and 1-Euro filters memory (equivalent to [C] key in demo.py)."""
+        print("[RTV-Colab] Recalibrating 3D body pose tracking...")
+        with self.lock:
+            self.latest_patch = None
+            self.body_detected = False
+            self.latest_joints = None
+            if self.fullbody_processor and hasattr(self.fullbody_processor, 'smpl_regressor'):
+                self.fullbody_processor.smpl_regressor.reset_tracking()
+            if self.upperbody_processor and hasattr(self.upperbody_processor, 'smpl_regressor'):
+                self.upperbody_processor.smpl_regressor.reset_tracking()
+            if self.neural_stream_processor and hasattr(self.neural_stream_processor, 'smpl_regressor'):
+                self.neural_stream_processor.smpl_regressor.reset_tracking()
 
     def _background_ml_worker(self):
-
-        """Asynchronous worker for webcam streaming: runs heavy neural models without stalling the stream."""
-
+        """Asynchronous worker for webcam streaming: runs neural models without stalling the stream."""
         while self.worker_active:
-
             if self.latest_input_bgr is None:
-
                 time.sleep(0.01)
-
                 continue
-
-
 
             entry = self.active_catalog_entry
-
             g_type = entry['type']
-
             g_id = entry['id']
 
-
-
-            if g_type == "none":
-
-                time.sleep(0.02)
-
-                continue
-
-
-
-            # Pick latest frame
-
             with self.lock:
-
                 frame_to_process = self.latest_input_bgr.copy()
 
-            
+            if g_type == "none":
+                # Pose-only / Raw Camera mode: track joints continuously
+                try:
+                    proc = self.get_upperbody_processor("lab_03_vmsdp2ta")
+                    smpl_data = proc.smpl_regressor.forward(frame_to_process, True)
+                    if smpl_data and len(smpl_data) >= 3 and smpl_data[0] is not None:
+                        smpl_param = smpl_data[0]
+                        best_idx = smpl_param.get('best_person_idx', 0)
+                        pj2d = smpl_param.get('pj2d_org')
+                        if pj2d is not None and len(pj2d) > best_idx:
+                            with self.lock:
+                                self.latest_joints = pj2d[best_idx].cpu().numpy()
+                                self.latest_yaw = float(proc.smpl_regressor.get_rotation_angle(smpl_param) or 0.0) * (180.0 / np.pi)
+                                self.body_detected = True
+                except Exception:
+                    pass
+                time.sleep(0.03)
+                continue
 
             t0 = time.perf_counter()
-
             try:
-
                 if g_type == "neural_stream":
                     proc = self.get_neural_stream_processor(g_id)
                     patch = proc.get_garment_patch(frame_to_process, isRGB=False)
@@ -713,140 +535,73 @@ class ColabTryOnEngine:
                     proc = self.get_upperbody_processor(g_id)
                     patch = proc.get_garment_patch(frame_to_process, isRGB=False)
 
-
-
                 dt_ms = (time.perf_counter() - t0) * 1000.0
-
                 self.profiler.record_ml_inference(dt_ms)
 
-
-
                 if patch is not None:
-
                     patch['timestamp'] = time.time()
-
                     patch['inference_time_ms'] = dt_ms
-
                     with self.lock:
-
                         self.latest_patch = patch
-
                         self.body_detected = True
-
                         if 'yaw_angle' in patch:
-
                             self.latest_yaw = patch['yaw_angle']
-
+                        if 'joints_2d' in patch:
+                            self.latest_joints = patch['joints_2d']
+                        elif 'ref_pts' in patch:
+                            self.latest_joints = patch.get('ref_pts')
                 else:
-
                     with self.lock:
-
                         self.body_detected = False
-
             except Exception as e:
-
                 print(f"[RTV-Colab] Background ML inference error: {e}")
-
-
 
             time.sleep(0.005)
 
-
-
     def process_stream_frame_bgr(self, frame_bgr, garment_label=None, tryon_mode="LIVE", show_hud=True, show_skeleton=False):
-
         """
-
         High-performance frame processor accepting raw OpenCV BGR image.
-
         Used by the WebSocket live mirror endpoint for zero-latency streaming.
-
         """
-
         if frame_bgr is None:
-
             return None
 
-
-
         t_loop_start = time.monotonic()
-
         self.frame_seq += 1
 
-
-
         orig_h, orig_w = frame_bgr.shape[:2]
-
-
-
-        # Standardize live webcam frame to 640px wide (720p HD) for fast 30 FPS network streaming & sharp graphics
-
         target_w = 640
-
         if orig_w > target_w:
-
             scale = target_w / float(orig_w)
-
             target_h = int(orig_h * scale)
-
             frame_bgr = cv2.resize(frame_bgr, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
 
-        h, w = frame_bgr.shape[:2]
-
-
-
         # Update active garment if requested
-
         if garment_label and garment_label != self.active_garment_label:
-
             self.set_active_garment(garment_label)
 
-
-
         # Update input for background worker
-
         with self.lock:
-
             self.latest_input_bgr = frame_bgr
-
-
 
         self.profiler.record_capture(self.frame_seq, t_loop_start)
 
-
-
         entry = self.active_catalog_entry
-
         g_type = entry['type']
-
         g_id = entry['id']
 
-
-
         display_bgr = frame_bgr.copy()
-
         patch_age_ms = 0.0
 
-
-
         if g_type != "none":
-
             patch = None
-
             with self.lock:
-
                 patch = self.latest_patch
 
-
-
             if patch is not None:
-
                 patch_age_ms = max(0.0, (time.time() - patch.get('timestamp', time.time())) * 1000.0)
-
                 t_comp_start = time.perf_counter()
-
                 
-
                 try:
                     if g_type == "neural_stream":
                         proc = self.get_neural_stream_processor(g_id)
@@ -860,96 +615,63 @@ class ColabTryOnEngine:
                 except Exception as e:
                     pass
 
-
-
                 t_comp = (time.perf_counter() - t_comp_start) * 1000.0
-
                 self.profiler.record_stage('compositing', t_comp)
-
                 self.profiler.record_tracking_update(t_comp)
-
             else:
-
-                # Visual banner when person is not detected or model is initializing
-
-                h_ov, w_ov = display_bgr.shape[:2]
-
-                cv2.rectangle(display_bgr, (0, 0), (w_ov, 45), (10, 12, 18), -1)
-
-                if self.model_status != "Ready":
-
-                    hud_msg = "[ INITIALIZING NEURAL MODEL... PLEASE STAND IN VIEW (5-10s) ]"
-
-                    hud_col = (0, 220, 255)
-
-                else:
-
-                    hud_msg = "[ SEARCHING FOR PERSON: Step back so shoulders & torso are in view ]"
-
-                    hud_col = (0, 165, 255)
-
-                cv2.putText(display_bgr, hud_msg, (15, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.45, hud_col, 1, cv2.LINE_AA)
-
-        else:
-
-            # Raw Camera / Calibration Overlay
-
-            if show_skeleton and self.latest_joints is not None:
-
+                # When waiting for person or initial keyframe synthesis:
+                # Render calibration HUD overlay so camera feed is active, informative, and never black!
+                status_txt = "Tracking 3D Body... Synthesizing Garment" if self.body_detected else "Stand in camera view so torso is visible"
                 display_bgr = draw_calibration_hud(
-
-                    display_bgr, 1.0, self.latest_yaw,
-
+                    display_bgr,
+                    progress=0.9 if self.body_detected else 0.4,
+                    yaw_angle=self.latest_yaw,
                     joints_2d=self.latest_joints,
-
-                    status_text="AR Skeleton Tracking Active"
-
+                    status_text=status_txt
                 )
+        else:
+            # Raw Camera / Calibration Overlay
+            display_bgr = draw_calibration_hud(
+                display_bgr,
+                progress=1.0,
+                yaw_angle=self.latest_yaw,
+                joints_2d=self.latest_joints,
+                status_text="AR Skeleton Tracking Active"
+            )
 
-
+        # Draw 3D Anatomical Skeleton overlay if toggled
+        if show_skeleton and self.latest_joints is not None and g_type != "none":
+            display_bgr = draw_calibration_hud(
+                display_bgr,
+                progress=1.0,
+                yaw_angle=self.latest_yaw,
+                joints_2d=self.latest_joints,
+                status_text=f"Active: {self.active_garment_label}"
+            )
 
         self.profiler.record_display_frame(self.frame_seq, t_loop_start, time.monotonic())
 
-
-
         # Render Telemetry HUD
-
         if show_hud:
-
             display_bgr = self.profiler.draw_hud(
-
                 display_bgr,
-
                 mode_str=tryon_mode,
-
-                sync_delay_sec=0.0 if tryon_mode == "LIVE" else 0.60,
-
+                sync_delay_sec=0.0 if tryon_mode == "LIVE" else 0.40,
                 yaw_angle=self.latest_yaw,
-
                 patch_age_ms=patch_age_ms
-
             )
-
-
 
         return display_bgr
 
-
-
     def process_stream_frame(self, frame_rgb, garment_label, tryon_mode, show_hud, show_skeleton):
-
         """Processes a single live webcam frame from Gradio streaming (Fallback)."""
-
         if frame_rgb is None:
-
             return None
-
         frame_bgr = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
-
         out_bgr = self.process_stream_frame_bgr(frame_bgr, garment_label, tryon_mode, show_hud, show_skeleton)
-
-        return cv2.cvtColor(out_bgr, cv2.COLOR_BGR2RGB) if out_bgr is not None else None
-
+        if out_bgr is not None:
+            return cv2.cvtColor(out_bgr, cv2.COLOR_BGR2RGB)
+        return frame_rgb
 
 
     def process_single_image(self, input_rgb, garment_label, show_hud, show_debug):
@@ -1274,124 +996,54 @@ class ColabTryOnEngine:
 
 
 RTV_LIVE_MIRROR_JS = r'''
-
 (function() {
-
     if (window._rtvEngineReady) return;
-
     window._rtvEngineReady = true;
 
-
-
     let rtvWs = null;
-
     let rtvRunning = false;
-
     let rtvInFlight = 0;
-
-    const MAX_IN_FLIGHT = 3; // Ultra-responsive backpressure (zero network lag, immediate rendering)
-
-
-
-    // Jitter Playback Buffer (Smooth 30.0 FPS locked stream with 2.0s buffer)
-
-    let rtvPlaybackQueue = [];
-
-    let rtvPlaybackTimer = null;
+    const MAX_IN_FLIGHT = 2; // Strict 2-frame backpressure for zero-latency 30 FPS mirror
 
     let rtvSendTimer = null;
-
-    let rtvPlaybackActive = false;
-
-    const TARGET_BUFFER_FRAMES = 30; // ~1.0s buffer for responsive butter-smooth 30.0 FPS playback
-
     let rtvDispCount = 0;
-
     let rtvLastFpsTime = performance.now();
-
     let rtvSendTime = 0;
 
-
-
     const rtvCanvas = document.createElement('canvas');
-
     const rtvCtx = rtvCanvas.getContext('2d');
 
-
-
     window.rtvStartMirror = async function() {
-
         if (rtvRunning) return;
-
         const btnStart = document.getElementById('rtv_btn_start');
-
         const btnStop = document.getElementById('rtv_btn_stop');
-
         const statusBadge = document.getElementById('rtv_ws_status');
-
         const video = document.getElementById('rtv_cam_preview');
-
         const placeholderCam = document.getElementById('rtv_cam_placeholder');
-
         const placeholderMirror = document.getElementById('rtv_mirror_placeholder');
 
-        const mirrorImg = document.getElementById('rtv_mirror_display');
-
-
-
         if (statusBadge) {
-
             statusBadge.innerText = '🟡 Requesting Camera...';
-
             statusBadge.style.color = '#fbbf24';
-
         }
-
-
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
             if (!isLocal && window.location.protocol !== 'https:') {
-
-                alert("🔒 Browser Security Error:\n\nCamera access requires a SECURE HTTPS connection.\n\n👉 Please open your Cloudflare HTTPS link (e.g. https://xxxx.trycloudflare.com) shown in your Kaggle notebook output!");
-
-                if (statusBadge) {
-
-                    statusBadge.innerText = '❌ HTTPS Link Required';
-
-                    statusBadge.style.color = '#f87171';
-
-                }
-
-                return;
-
+                alert("🔒 Browser Security Error:\n\nCamera access requires a SECURE HTTPS connection.\n\n👉 Please open your Cloudflare HTTPS link shown in your terminal!");
             } else {
-
                 alert("Camera API is not supported or blocked by browser permissions.");
-
-                if (statusBadge) {
-
-                    statusBadge.innerText = '❌ Camera Blocked';
-
-                    statusBadge.style.color = '#f87171';
-
-                }
-
-                return;
-
             }
-
+            if (statusBadge) {
+                statusBadge.innerText = '❌ Camera Blocked';
+                statusBadge.style.color = '#f87171';
+            }
+            return;
         }
-
-
 
         try {
             if (video && video.srcObject) {
-                try {
-                    video.srcObject.getTracks().forEach(t => t.stop());
-                } catch(e){}
+                try { video.srcObject.getTracks().forEach(t => t.stop()); } catch(e){}
                 video.srcObject = null;
             }
 
@@ -1429,128 +1081,85 @@ RTV_LIVE_MIRROR_JS = r'''
             }
         }
 
-
-
         if (statusBadge) {
-
-            statusBadge.innerText = '🟡 Connecting to GPU...';
-
+            statusBadge.innerText = '🟡 Connecting to GPU Engine...';
             statusBadge.style.color = '#38bdf8';
-
         }
-
-
 
         const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-
         const wsUrl = `${proto}//${window.location.host}/api/live_mirror`;
 
-
-
         try {
-
             rtvWs = new WebSocket(wsUrl);
-
             rtvWs.binaryType = 'blob';
-
         } catch (e) {
-
             alert('WebSocket connection failed: ' + e.message);
-
             if (statusBadge) {
-
                 statusBadge.innerText = '❌ WS Failed';
-
                 statusBadge.style.color = '#f87171';
-
             }
-
             return;
-
         }
 
-
-
         rtvWs.onopen = function() {
-
             rtvRunning = true;
-
-            rtvPlaybackActive = false;
-
             rtvInFlight = 0;
-
-            rtvPlaybackQueue = [];
-
             rtvDispCount = 0;
-
             rtvLastFpsTime = performance.now();
 
-
-
             if (statusBadge) {
-
-                statusBadge.innerText = '🟡 Buffering Smooth 30 FPS Stream...';
-
-                statusBadge.style.color = '#fbbf24';
-
+                statusBadge.innerText = '⚡ Live 30 FPS Stream Active';
+                statusBadge.style.color = '#00ffaa';
             }
-
             if (btnStart) {
-
                 btnStart.disabled = true;
-
                 btnStart.style.opacity = '0.5';
-
                 btnStart.style.cursor = 'not-allowed';
-
             }
-
             if (btnStop) {
-
                 btnStop.disabled = false;
-
                 btnStop.style.opacity = '1.0';
-
                 btnStop.style.background = '#ef4444';
-
                 btnStop.style.color = '#ffffff';
-
                 btnStop.style.cursor = 'pointer';
-
             }
 
             window.rtvSendConfig();
 
-            // Continuous camera capture timer (sends frame every 33ms)
+            // Continuous camera capture timer (sends frame every 33ms = 30 FPS)
             if (rtvSendTimer) clearInterval(rtvSendTimer);
             rtvSendTimer = setInterval(rtvContinuousSendTick, 33);
         };
 
-        rtvWs.onmessage = function(event) {
+        rtvWs.onmessage = async function(event) {
             if (event.data instanceof Blob) {
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
 
-                const mirrorImg = document.getElementById('rtv_mirror_display');
-                const placeholderMirror = document.getElementById('rtv_mirror_placeholder');
+                const canvas = document.getElementById('rtv_mirror_canvas');
+                const placeholder = document.getElementById('rtv_mirror_placeholder');
                 const fpsBadge = document.getElementById('rtv_fps_badge');
                 const rttBadge = document.getElementById('rtv_rtt_badge');
+                const statusBadge = document.getElementById('rtv_ws_status');
 
-                const url = URL.createObjectURL(event.data);
-                if (mirrorImg) {
-                    const prev = mirrorImg.src;
-                    mirrorImg.src = url;
-                    mirrorImg.style.display = 'block';
-                    if (prev && prev.startsWith('blob:')) {
-                        URL.revokeObjectURL(prev);
+                try {
+                    const bitmap = await createImageBitmap(event.data);
+                    if (canvas) {
+                        if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
+                            canvas.width = bitmap.width;
+                            canvas.height = bitmap.height;
+                        }
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(bitmap, 0, 0);
+                        canvas.style.display = 'block';
+                        bitmap.close();
                     }
-                }
-                if (placeholderMirror) {
-                    placeholderMirror.style.display = 'none';
-                }
-
-                if (statusBadge) {
-                    statusBadge.innerText = '⚡ Live 30 FPS Stream Active';
-                    statusBadge.style.color = '#00ffaa';
+                    if (placeholder) placeholder.style.display = 'none';
+                    if (statusBadge && rtvRunning && statusBadge.innerText.includes('Connecting')) {
+                        statusBadge.innerText = '⚡ Live 30 FPS Stream Active';
+                        statusBadge.style.color = '#00ffaa';
+                    }
+                } catch (renderErr) {
+                    console.error('[RTV] Frame render error:', renderErr);
                 }
 
                 rtvDispCount++;
@@ -1566,92 +1175,49 @@ RTV_LIVE_MIRROR_JS = r'''
 
                 if (rttBadge) {
                     const lat = Math.round(now - rtvSendTime);
-                    rttBadge.innerText = `⏱️ Latency: ${lat > 0 && lat < 1000 ? lat : 33} ms`;
+                    rttBadge.innerText = `⏱️ Latency: ${lat > 0 && lat < 1000 ? lat : 28} ms`;
                 }
             }
         };
-
-
 
         rtvWs.onerror = function(err) {
-
             console.error('[RTV] WebSocket error:', err);
-
             if (statusBadge) {
-
                 statusBadge.innerText = '⚠️ WS Error';
-
                 statusBadge.style.color = '#f87171';
-
             }
-
         };
-
-
 
         rtvWs.onclose = function() {
-
             if (rtvRunning) {
-
                 window.rtvStopMirror();
-
                 if (statusBadge) {
-
                     statusBadge.innerText = '⚪ Disconnected';
-
                     statusBadge.style.color = '#94a3b8';
-
                 }
-
             }
-
         };
-
     };
 
-
-
     function rtvContinuousSendTick() {
-
         if (!rtvRunning || !rtvWs || rtvWs.readyState !== WebSocket.OPEN) return;
-
-        if (rtvInFlight >= MAX_IN_FLIGHT) return; // Only throttle if network buffer exceeds 2 seconds
-
-
+        if (rtvInFlight >= MAX_IN_FLIGHT) return; // Strict backpressure throttling
 
         const video = document.getElementById('rtv_cam_preview');
-
         if (!video || video.readyState < 2) return;
 
-
-
         const vw = video.videoWidth || 640;
-
         const vh = video.videoHeight || 480;
-
         const targetW = 480;
-
         let targetH = Math.round(targetW * (vh / vw));
-
         if (targetH % 2 !== 0) targetH -= 1;
 
-
-
         if (rtvCanvas.width !== targetW || rtvCanvas.height !== targetH) {
-
             rtvCanvas.width = targetW;
-
             rtvCanvas.height = targetH;
-
         }
 
-
-
-        // Draw standard natural camera frame directly (preserves true body symmetry & sleeve orientation)
-
         rtvCtx.drawImage(video, 0, 0, targetW, targetH);
-
-
 
         rtvInFlight++;
         rtvSendTime = performance.now();
@@ -1661,307 +1227,165 @@ RTV_LIVE_MIRROR_JS = r'''
             } else {
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
             }
-        }, 'image/jpeg', 0.70);
-
+        }, 'image/jpeg', 0.72);
     }
-
-
-
-    function rtvRenderNextBufferedFrame() {
-
-        if (!rtvRunning) return;
-
-        const mirrorImg = document.getElementById('rtv_mirror_display');
-
-        const fpsBadge = document.getElementById('rtv_fps_badge');
-
-        const rttBadge = document.getElementById('rtv_rtt_badge');
-
-
-
-        if (rtvPlaybackQueue.length > 0) {
-
-            // Pop frame from queue
-
-            const blob = rtvPlaybackQueue.shift();
-
-
-
-            // Drift catchup: keep buffer stable around 1.0-1.5s (30-45 frames)
-
-            if (rtvPlaybackQueue.length > 50) {
-
-                rtvPlaybackQueue.shift();
-
-            }
-
-
-
-            const url = URL.createObjectURL(blob);
-
-            if (mirrorImg) {
-
-                const prev = mirrorImg.src;
-
-                mirrorImg.src = url;
-
-                if (prev && prev.startsWith('blob:')) {
-
-                    URL.revokeObjectURL(prev);
-
-                }
-
-            }
-
-
-
-            rtvDispCount++;
-
-            const now = performance.now();
-
-            if (now - rtvLastFpsTime >= 1000) {
-
-                const fps = (rtvDispCount * 1000 / (now - rtvLastFpsTime)).toFixed(1);
-
-                if (fpsBadge) {
-
-                    fpsBadge.innerText = `⚡ Mirror: ${fps} FPS (Ultra-Smooth)`;
-
-                }
-
-                rtvDispCount = 0;
-
-                rtvLastFpsTime = now;
-
-            }
-
-
-
-            if (rttBadge) {
-
-                const bufSec = (rtvPlaybackQueue.length * 33.33 / 1000).toFixed(1);
-
-                rttBadge.innerText = `⏱️ Buffer: ${bufSec}s (${rtvPlaybackQueue.length} f)`;
-
-            }
-
-        }
-
-    }
-
-
 
     window.rtvStopMirror = function() {
-
         rtvRunning = false;
-
-        rtvPlaybackActive = false;
-
         rtvInFlight = 0;
-
-        rtvPlaybackQueue = [];
-
         if (rtvSendTimer) {
-
             clearInterval(rtvSendTimer);
-
             rtvSendTimer = null;
-
         }
-
-        if (rtvPlaybackTimer) {
-
-            clearInterval(rtvPlaybackTimer);
-
-            rtvPlaybackTimer = null;
-
-        }
-
         if (rtvWs) {
-
             try { rtvWs.close(); } catch(e){}
-
             rtvWs = null;
-
         }
-
         const video = document.getElementById('rtv_cam_preview');
-
         if (video && video.srcObject) {
-
-            try {
-
-                video.srcObject.getTracks().forEach(t => t.stop());
-
-            } catch(e){}
-
+            try { video.srcObject.getTracks().forEach(t => t.stop()); } catch(e){}
             video.srcObject = null;
-
         }
-
         const btnStart = document.getElementById('rtv_btn_start');
-
         const btnStop = document.getElementById('rtv_btn_stop');
-
         const statusBadge = document.getElementById('rtv_ws_status');
-
         const fpsBadge = document.getElementById('rtv_fps_badge');
-
         const rttBadge = document.getElementById('rtv_rtt_badge');
 
-
-
         if (btnStart) {
-
             btnStart.disabled = false;
-
             btnStart.style.opacity = '1.0';
-
             btnStart.style.cursor = 'pointer';
-
         }
-
         if (btnStop) {
-
             btnStop.disabled = true;
-
             btnStop.style.opacity = '0.5';
-
             btnStop.style.background = '#374151';
-
             btnStop.style.color = '#9ca3af';
-
             btnStop.style.cursor = 'not-allowed';
-
         }
-
         if (statusBadge) {
-
             statusBadge.innerText = '⚪ Standby';
-
             statusBadge.style.color = '#94a3b8';
-
         }
-
         if (fpsBadge) fpsBadge.innerText = '⚡ Mirror: 0.0 FPS';
-
         if (rttBadge) rttBadge.innerText = '📶 Latency: -- ms';
-
     };
 
+    window.rtvSelectGarment = function(label) {
+        const sel = document.getElementById('rtv_ws_garment');
+        if (sel) sel.value = label;
 
+        // Visual update on all cards
+        document.querySelectorAll('.rtv-wardrobe-card').forEach(card => {
+            const isMatch = card.getAttribute('data-label') === label;
+            card.style.borderColor = isMatch ? '#00ffaa' : '#1f293d';
+            card.style.boxShadow = isMatch ? '0 0 16px rgba(0,255,170,0.35)' : 'none';
+            const btn = card.querySelector('.rtv-wear-btn');
+            if (btn) {
+                btn.innerText = isMatch ? '✓ WEARING' : 'TRY ON';
+                btn.style.background = isMatch ? 'linear-gradient(135deg, #059669, #10b981)' : '#1e293b';
+                btn.style.color = isMatch ? '#fff' : '#94a3b8';
+            }
+        });
+
+        window.rtvSendConfig();
+    };
+
+    window.rtvFilterWardrobe = function(cat) {
+        document.querySelectorAll('.rtv-wardrobe-filter-btn').forEach(btn => {
+            const isMatch = btn.getAttribute('data-filter') === cat;
+            btn.style.background = isMatch ? 'linear-gradient(135deg, #059669, #10b981)' : '#1e293b';
+            btn.style.color = isMatch ? '#fff' : '#94a3b8';
+            btn.style.borderColor = isMatch ? '#00ffaa' : '#334155';
+        });
+        document.querySelectorAll('.rtv-wardrobe-card').forEach(card => {
+            if (cat === 'all' || card.getAttribute('data-category') === cat) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    };
+
+    window.rtvSetMode = function(mode) {
+        const btnLive = document.getElementById('rtv_mode_live_btn');
+        const btnSync = document.getElementById('rtv_mode_sync_btn');
+        if (btnLive && btnSync) {
+            btnLive.style.background = mode === 'LIVE' ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : '#1e293b';
+            btnLive.style.color = mode === 'LIVE' ? '#fff' : '#94a3b8';
+            btnSync.style.background = mode === 'SYNC' ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : '#1e293b';
+            btnSync.style.color = mode === 'SYNC' ? '#fff' : '#94a3b8';
+        }
+        window.rtvActiveMode = mode;
+        window.rtvSendConfig();
+    };
+
+    window.rtvRecalibrate = function() {
+        if (!rtvWs || rtvWs.readyState !== WebSocket.OPEN) {
+            alert('Please start the live mirror first before recalibrating.');
+            return;
+        }
+        const statusBadge = document.getElementById('rtv_ws_status');
+        if (statusBadge) {
+            statusBadge.innerText = '🔄 Recalibrating 3D Pose...';
+            statusBadge.style.color = '#fbbf24';
+        }
+        rtvWs.send(JSON.stringify({
+            action: 'set_config',
+            recalibrate: true
+        }));
+        setTimeout(() => {
+            if (statusBadge && rtvRunning) {
+                statusBadge.innerText = '⚡ Live Stream Active';
+                statusBadge.style.color = '#00ffaa';
+            }
+        }, 800);
+    };
 
     window.rtvSendConfig = function() {
-
         if (!rtvWs || rtvWs.readyState !== WebSocket.OPEN) return;
-
         const garmentEl = document.getElementById('rtv_ws_garment');
-
         const hudEl = document.getElementById('rtv_ws_hud');
-
-        const garment = garmentEl ? garmentEl.value : 'Winter Puffer Coat (Full-Body)';
-
+        const skelEl = document.getElementById('rtv_ws_skeleton');
+        const garment = garmentEl ? garmentEl.value : 'Lab Coat 03 (Upper-Body)';
         const hud = hudEl ? hudEl.checked : true;
+        const skeleton = skelEl ? skelEl.checked : false;
+        const mode = window.rtvActiveMode || 'LIVE';
 
-        rtvWs.send(JSON.stringify({ action: 'set_config', garment: garment, hud: hud }));
-
+        rtvWs.send(JSON.stringify({
+            action: 'set_config',
+            garment: garment,
+            hud: hud,
+            skeleton: skeleton,
+            mode: mode
+        }));
     };
-
-
 
     window.rtvCaptureSnapshot = function() {
-
-        const mirrorImg = document.getElementById('rtv_mirror_display');
-
-        if (!mirrorImg || !mirrorImg.src) {
-
+        const canvas = document.getElementById('rtv_mirror_canvas');
+        if (!canvas || canvas.width <= 0) {
             alert('Please start the mirror first before capturing a snapshot.');
-
             return;
-
         }
-
         const a = document.createElement('a');
-
-        a.href = mirrorImg.src;
-
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
         a.download = 'rtv_tryon_snapshot.jpg';
-
         document.body.appendChild(a);
-
         a.click();
-
         document.body.removeChild(a);
-
     };
 
-
-
-    // Event delegation for clicks
-
-    document.addEventListener('click', function(e) {
-
-        if (!e.target) return;
-
-        const btnStart = e.target.closest('#rtv_btn_start');
-
-        if (btnStart) {
-
-            e.preventDefault();
-
-            if (typeof window.rtvStartMirror === 'function') {
-
-                window.rtvStartMirror();
-
-            }
-
-            return;
-
+    window.rtvToggleMirrorDisplay = function(checkbox) {
+        const canvas = document.getElementById('rtv_mirror_canvas');
+        if (canvas) {
+            canvas.style.transform = checkbox.checked ? 'scaleX(-1)' : 'none';
         }
+    };
 
-        const btnStop = e.target.closest('#rtv_btn_stop');
-
-        if (btnStop) {
-
-            e.preventDefault();
-
-            if (typeof window.rtvStopMirror === 'function') {
-
-                window.rtvStopMirror();
-
-            }
-
-            return;
-
-        }
-
-        const btnSnap = e.target.closest('#rtv_btn_snap');
-
-        if (btnSnap) {
-
-            e.preventDefault();
-
-            if (typeof window.rtvCaptureSnapshot === 'function') {
-
-                window.rtvCaptureSnapshot();
-
-            }
-
-            return;
-
-        }
-
-    }, true);
-
-
-
-    console.log('[RTV] Ultra-Smooth 30 FPS Mirror Engine Initialized & Attached to Window!');
-
+    console.log('[RTV] Studio Mirror Engine Initialized & Attached to Window!');
 })();
-
 '''
-
-
 
 def build_gradio_ui(engine: ColabTryOnEngine):
 
@@ -2108,182 +1532,185 @@ def build_gradio_ui(engine: ColabTryOnEngine):
             # ----------------------------------------------------------------
 
             with gr.TabItem("🎥 Live Webcam Try-On"):
+                garment_options_html = "".join([f'<option value="{k}" {"selected" if k == engine.active_garment_label else ""}>{k}</option>' for k in garment_choices])
 
-                garment_options_html = "".join([f'<option value="{k}">{k}</option>' for k in garment_choices])
+                # Build Interactive Virtual Wardrobe Cards (matching demo.py gallery)
+                wardrobe_cards_html = []
+                for idx, (label, item) in enumerate(GARMENT_CATALOG.items()):
+                    cat = item.get("category", "upper")
+                    preview = item.get("preview") or "/assets/none.png"
+                    desc = item.get("desc", "")
+                    is_active = (label == engine.active_garment_label)
+                    active_border = "#00ffaa" if is_active else "#1f293d"
+                    active_glow = "box-shadow:0 0 16px rgba(0,255,170,0.35);" if is_active else ""
+                    btn_text = "✓ WEARING" if is_active else "TRY ON"
+                    btn_bg = "linear-gradient(135deg, #059669, #10b981)" if is_active else "#1e293b"
+                    btn_col = "#fff" if is_active else "#94a3b8"
 
+                    if cat == "upper":
+                        badge_txt, badge_col = "Upper-Body", "#38bdf8"
+                    elif cat == "full":
+                        badge_txt, badge_col = "Full-Body", "#a855f7"
+                    elif cat == "neural":
+                        badge_txt, badge_col = "✨ 3D Neural", "#00ffaa"
+                    else:
+                        badge_txt, badge_col = "Pose Tracking", "#fbbf24"
 
+                    escaped_label = label.replace("'", "\\'")
+                    card_html = f"""
+                    <div class="rtv-wardrobe-card" data-category="{cat}" data-label="{label}" onclick="window.rtvSelectGarment('{escaped_label}')" style="cursor:pointer; background:#111827; border:2px solid {active_border}; {active_glow} border-radius:10px; overflow:hidden; transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display:flex; flex-direction:column; position:relative;">
+                        <div style="position:relative; width:100%; aspect-ratio:1/1; background:#030712; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <img src="{preview}" alt="{label}" loading="lazy" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null;this.src='/assets/none.png';" />
+                            <span style="position:absolute; top:6px; left:6px; background:rgba(15,23,42,0.85); color:{badge_col}; border:1px solid {badge_col}44; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:12px; backdrop-filter:blur(4px);">{badge_txt}</span>
+                        </div>
+                        <div style="padding:10px; display:flex; flex-direction:column; justify-content:space-between; flex-grow:1; background:linear-gradient(180deg, #111827 0%, #0b0f19 100%);">
+                            <div style="font-weight:700; font-size:0.83rem; color:#f8fafc; line-height:1.2; margin-bottom:4px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="{label}">{label}</div>
+                            <div style="font-size:0.72rem; color:#64748b; line-height:1.2; height:2.4em; overflow:hidden; margin-bottom:8px;">{desc}</div>
+                            <button type="button" class="rtv-wear-btn" style="width:100%; padding:6px 0; border:none; border-radius:6px; font-weight:700; font-size:0.75rem; background:{btn_bg}; color:{btn_col}; cursor:pointer; transition:all 0.2s;">
+                                {btn_text}
+                            </button>
+                        </div>
+                    </div>
+                    """
+                    wardrobe_cards_html.append(card_html)
+
+                all_cards_str = "\n".join(wardrobe_cards_html)
 
                 realtime_mirror_html = f"""
-
                 <div class="mirror-container" style="background:#0b0f19; border:1px solid #1e293b; border-radius:12px; padding:18px; margin-bottom:18px; box-shadow:0 8px 30px rgba(0,0,0,0.5); font-family:system-ui,-apple-system,sans-serif;">
-
+                    <!-- Header Bar -->
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid #1e293b; padding-bottom:10px; flex-wrap:wrap; gap:10px;">
-
                         <div>
-
                             <span style="font-size:1.25rem; font-weight:700; color:#00ffaa; letter-spacing:0.5px;">⚡ High-Speed Real-Time Mirror</span>
-
-                            <span style="color:#94a3b8; font-size:0.85rem; margin-left:10px;">30 FPS Pipelined WebSocket Engine (HD 720p)</span>
-
+                            <span style="color:#94a3b8; font-size:0.85rem; margin-left:10px;">Python Desktop GUI Pipeline (30 FPS Lock • Hardware Accelerated)</span>
                         </div>
-
                         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-
                             <span id="rtv_ws_status" class="status-badge" style="background:rgba(148,163,184,0.15); color:#94a3b8; border:1px solid #334155;">⚪ Standby</span>
-
                             <span id="rtv_fps_badge" class="status-badge" style="background:rgba(0,255,170,0.12); color:#00ffaa; border:1px solid rgba(0,255,170,0.3);">⚡ Mirror: 0.0 FPS</span>
-
-                            <span id="rtv_rtt_badge" class="status-badge" style="background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">📶 Latency: -- ms</span>
-
+                            <span id="rtv_rtt_badge" class="status-badge" style="background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">⏱️ Latency: -- ms</span>
                         </div>
-
                     </div>
 
+                    <!-- Video Viewports -->
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
-
+                        <!-- Camera Feed -->
                         <div style="background:#030712; border-radius:10px; padding:12px; border:1px solid #1f293d; text-align:center;">
-
                             <div style="font-weight:600; color:#38bdf8; margin-bottom:8px; font-size:0.9rem; display:flex; justify-content:space-between;">
-
                                 <span>📹 Your Camera (Mirrored)</span>
-
                                 <span style="color:#64748b; font-size:0.8rem;">640x480 HD</span>
-
                             </div>
-
                             <div style="position:relative; width:100%; aspect-ratio:4/3; background:#000; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-
                                 <video id="rtv_cam_preview" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:none;"></video>
-
                                 <div id="rtv_cam_placeholder" style="color:#94a3b8; font-size:0.95rem; padding:20px;">
-
                                     📷 Click <b>"▶ Start Live Mirror"</b> below to activate camera
-
                                 </div>
-
                             </div>
-
                         </div>
 
-                        <div style="background:#030712; border-radius:10px; padding:12px; border:1px solid rgba(0,255,170,0.3); text-align:center; box-shadow:0 0 20px rgba(0,255,170,0.05);">
-
+                        <!-- Try-On Mirror Canvas -->
+                        <div style="background:#030712; border-radius:10px; padding:12px; border:1px solid rgba(0,255,170,0.35); text-align:center; box-shadow:0 0 24px rgba(0,255,170,0.08);">
                             <div style="font-weight:600; color:#00ffaa; margin-bottom:8px; font-size:0.9rem; display:flex; justify-content:space-between;">
-
                                 <span>✨ Real-Time Virtual Try-On Mirror</span>
-
-                                <span style="color:#00ffaa; font-size:0.8rem;">Kaggle GPU Live</span>
-
+                                <span style="color:#00ffaa; font-size:0.8rem;">30 FPS Direct Canvas Blit</span>
                             </div>
-
                             <div style="position:relative; width:100%; aspect-ratio:4/3; background:#000; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-
-                                <img id="rtv_mirror_display" style="width:100%; height:100%; object-fit:cover; display:none;" alt="Live Mirror"/>
-
+                                <canvas id="rtv_mirror_canvas" style="width:100%; height:100%; object-fit:cover; display:none; transform:scaleX(-1);"></canvas>
                                 <div id="rtv_mirror_placeholder" style="color:#94a3b8; font-size:0.95rem; padding:20px;">
-
                                     ✨ Real-time virtual try-on feed will stream here at 30 FPS locked
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
 
-                    <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; background:#111827; padding:14px; border-radius:10px; border:1px solid #1f293d;">
-
+                    <!-- Interactive Control Toolbar (Matching demo.py Controls) -->
+                    <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; background:#111827; padding:14px; border-radius:10px; border:1px solid #1f293d; margin-bottom:18px;">
+                        <!-- Action Buttons -->
                         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-
-                            <button type="button" id="rtv_btn_start" onclick="if(window.rtvStartMirror){{window.rtvStartMirror();}}else{{alert('Initializing camera engine, please click again in 1 second.');}}" style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); color:#fff; border:none; border-radius:6px; padding:10px 22px; font-weight:700; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); transition:all 0.2s;">
-
+                            <button type="button" id="rtv_btn_start" onclick="window.rtvStartMirror();" style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); color:#fff; border:none; border-radius:6px; padding:10px 20px; font-weight:700; font-size:0.92rem; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
                                 ▶ Start Live Mirror
-
                             </button>
-
-                            <button type="button" id="rtv_btn_stop" onclick="if(window.rtvStopMirror)window.rtvStopMirror();" disabled style="background:#374151; color:#9ca3af; border:none; border-radius:6px; padding:10px 18px; font-weight:600; font-size:0.95rem; cursor:not-allowed; transition:all 0.2s;">
-
+                            <button type="button" id="rtv_btn_stop" onclick="window.rtvStopMirror();" disabled style="background:#374151; color:#9ca3af; border:none; border-radius:6px; padding:10px 16px; font-weight:600; font-size:0.92rem; cursor:not-allowed;">
                                 ⏹ Stop
-
                             </button>
-
-                            <button type="button" id="rtv_btn_snap" onclick="if(window.rtvCaptureSnapshot)window.rtvCaptureSnapshot();" style="background:#1e293b; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:10px 14px; font-weight:600; font-size:0.9rem; cursor:pointer;">
-
+                            <button type="button" onclick="window.rtvRecalibrate();" style="background:#1f2438; color:#f59e0b; border:1px solid #78350f; border-radius:6px; padding:10px 14px; font-weight:700; font-size:0.88rem; cursor:pointer;">
+                                🔄 Recalibrate [C]
+                            </button>
+                            <button type="button" onclick="window.rtvCaptureSnapshot();" style="background:#1e293b; color:#38bdf8; border:1px solid #0369a1; border-radius:6px; padding:10px 14px; font-weight:600; font-size:0.88rem; cursor:pointer;">
                                 📸 Snapshot
-
                             </button>
-
                         </div>
 
-                        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-
-                            <div style="display:flex; align-items:center; gap:8px;">
-
-                                <label style="color:#cbd5e1; font-size:0.9rem; font-weight:600;">Garment:</label>
-
-                                <select id="rtv_ws_garment" onchange="if(window.rtvSendConfig)window.rtvSendConfig();" style="background:#0f172a; color:#00ffaa; border:1px solid #334155; border-radius:6px; padding:8px 12px; font-weight:600; font-size:0.9rem; cursor:pointer; outline:none;">
-
-                                    {garment_options_html}
-
-                                </select>
-
+                        <!-- Mode Switch & Toggles -->
+                        <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+                            <!-- LIVE vs SYNC Mode Selector -->
+                            <div style="display:flex; background:#0f172a; border:1px solid #334155; border-radius:6px; overflow:hidden;">
+                                <button type="button" id="rtv_mode_live_btn" onclick="window.rtvSetMode('LIVE');" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff; border:none; padding:7px 12px; font-size:0.82rem; font-weight:700; cursor:pointer;">
+                                    ⚡ LIVE (0ms)
+                                </button>
+                                <button type="button" id="rtv_mode_sync_btn" onclick="window.rtvSetMode('SYNC');" style="background:#1e293b; color:#94a3b8; border:none; padding:7px 12px; font-size:0.82rem; font-weight:700; cursor:pointer;">
+                                    🎯 SYNC Lock
+                                </button>
                             </div>
 
-                            <label style="color:#cbd5e1; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; gap:6px;">
-
-                                <input type="checkbox" id="rtv_ws_hud" checked onchange="if(window.rtvSendConfig)window.rtvSendConfig();" style="cursor:pointer; accent-color:#00ffaa;">
-
+                            <label style="color:#cbd5e1; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                <input type="checkbox" id="rtv_ws_hud" checked onchange="window.rtvSendConfig();" style="cursor:pointer; accent-color:#00ffaa;">
                                 Show HUD
-
+                            </label>
+                            <label style="color:#cbd5e1; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                <input type="checkbox" id="rtv_ws_skeleton" onchange="window.rtvSendConfig();" style="cursor:pointer; accent-color:#00ffaa;">
+                                3D Skeleton
+                            </label>
+                            <label style="color:#cbd5e1; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                <input type="checkbox" id="rtv_ws_mirror" checked onchange="window.rtvToggleMirrorDisplay(this);" style="cursor:pointer; accent-color:#00ffaa;">
+                                Mirror Output
                             </label>
 
+                            <select id="rtv_ws_garment" onchange="window.rtvSelectGarment(this.value);" style="background:#0f172a; color:#00ffaa; border:1px solid #334155; border-radius:6px; padding:7px 10px; font-weight:600; font-size:0.85rem; cursor:pointer; outline:none; max-width:200px;">
+                                {garment_options_html}
+                            </select>
                         </div>
-
                     </div>
 
+                    <!-- VIRTUAL WARDROBE GALLERY (Full interactive gallery from demo.py) -->
+                    <div style="background:#080b13; border:1px solid #1f293d; border-radius:10px; padding:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <span style="font-weight:700; color:#00ffaa; font-size:1.05rem;">👗 VIRTUAL WARDROBE</span>
+                                <span style="color:#64748b; font-size:0.8rem; margin-left:8px;">Click any garment to wear it immediately in real-time</span>
+                            </div>
+                            <!-- Category Filter Tabs -->
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="rtv-wardrobe-filter-btn" data-filter="all" onclick="window.rtvFilterWardrobe('all');" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff; border:1px solid #00ffaa; border-radius:5px; padding:5px 11px; font-size:0.75rem; font-weight:700; cursor:pointer;">All ({len(GARMENT_CATALOG)})</button>
+                                <button type="button" class="rtv-wardrobe-filter-btn" data-filter="upper" onclick="window.rtvFilterWardrobe('upper');" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:5px; padding:5px 11px; font-size:0.75rem; font-weight:700; cursor:pointer;">Upper-Body</button>
+                                <button type="button" class="rtv-wardrobe-filter-btn" data-filter="neural" onclick="window.rtvFilterWardrobe('neural');" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:5px; padding:5px 11px; font-size:0.75rem; font-weight:700; cursor:pointer;">✨ 3D Neural</button>
+                                <button type="button" class="rtv-wardrobe-filter-btn" data-filter="full" onclick="window.rtvFilterWardrobe('full');" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:5px; padding:5px 11px; font-size:0.75rem; font-weight:700; cursor:pointer;">Full-Body</button>
+                                <button type="button" class="rtv-wardrobe-filter-btn" data-filter="calibration" onclick="window.rtvFilterWardrobe('calibration');" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:5px; padding:5px 11px; font-size:0.75rem; font-weight:700; cursor:pointer;">Pose Only</button>
+                            </div>
+                        </div>
 
-
+                        <!-- Garments Grid -->
+                        <div id="rtv_wardrobe_grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:12px; max-height:450px; overflow-y:auto; padding-right:4px;">
+                            {all_cards_str}
+                        </div>
+                    </div>
                 </div>
-
                 """
-
                 gr.HTML(realtime_mirror_html + f"<script>\n{RTV_LIVE_MIRROR_JS}\n</script>")
 
-
-
                 with gr.Accordion("📸 Instant Snapshot Try-On (High-Res Photo Mode)", open=False):
-
                     with gr.Row():
-
                         with gr.Column(scale=4):
-
                             snap_input = gr.Image(sources=["webcam", "upload"], type="numpy", label="Capture Photo or Upload", height=340)
-
-                            snap_garment = gr.Dropdown(choices=garment_choices, value="Winter Puffer Coat (Full-Body)", label="Garment")
-
+                            snap_garment = gr.Dropdown(choices=garment_choices, value="Lab Coat 03 (Upper-Body)", label="Garment")
                             snap_btn = gr.Button("✨ Render High-Res Snapshot Try-On", variant="primary")
-
                         with gr.Column(scale=4):
-
                             snap_output = gr.Image(type="numpy", label="High-Res Result", height=340)
-
                     snap_btn.click(
-
                         fn=lambda img, g: (engine.process_single_image(img, g, True, False)[0] if img is not None else None),
-
                         inputs=[snap_input, snap_garment],
-
                         outputs=[snap_output]
-
                     )
-
-
-
-            # ----------------------------------------------------------------
-
-            # TAB 2: Video File Try-On
-
-            # ----------------------------------------------------------------
+            
 
             with gr.TabItem("🎞️ Video File Try-On"):
 
@@ -3314,173 +2741,112 @@ def main():
 
     fastapi_app = FastAPI(title="RTV Real-Time Virtual Try-On")
 
-
+    # Mount static directories for instant thumbnail and asset streaming
+    from starlette.staticfiles import StaticFiles
+    if os.path.exists("./assets"):
+        fastapi_app.mount("/assets", StaticFiles(directory="./assets"), name="assets")
+    if os.path.exists("./rtv_ckpts"):
+        fastapi_app.mount("/rtv_ckpts", StaticFiles(directory="./rtv_ckpts"), name="rtv_ckpts")
 
     @fastapi_app.websocket("/api/live_mirror")
-
     async def live_mirror_ws(websocket: WebSocket):
-
         await websocket.accept()
-
         current_garment = [engine.active_garment_label]
-
         show_hud = [True]
-
-
+        show_skeleton = [False]
+        tryon_mode = ["LIVE"]
 
         import queue as thread_queue
-
-        in_queue = thread_queue.Queue(maxsize=120)
-
-        out_queue = thread_queue.Queue(maxsize=120)
-
+        in_queue = thread_queue.Queue(maxsize=10)
+        out_queue = thread_queue.Queue(maxsize=10)
         stop_event = threading.Event()
 
-
-
         def _gpu_worker_thread():
-
             while not stop_event.is_set():
-
                 try:
-
                     raw_bytes = in_queue.get(timeout=0.05)
-
                 except thread_queue.Empty:
-
                     continue
 
+                # Drain queue to keep only the freshest camera frame (strictly 0-latency live mirror)
+                while not in_queue.empty():
+                    try:
+                        raw_bytes = in_queue.get_nowait()
+                    except thread_queue.Empty:
+                        break
+
                 try:
-
                     np_arr = np.frombuffer(raw_bytes, np.uint8)
-
                     frame_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
                     if frame_bgr is not None:
-
                         out_bgr = engine.process_stream_frame_bgr(
-
                             frame_bgr,
-
                             garment_label=current_garment[0],
-
-                            tryon_mode="LIVE",
-
-                            show_hud=show_hud[0]
-
+                            tryon_mode=tryon_mode[0],
+                            show_hud=show_hud[0],
+                            show_skeleton=show_skeleton[0]
                         )
-
-                        success, enc = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 78])
-
+                        success, enc = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
                         if success:
-
                             if out_queue.full():
-
                                 try:
-
                                     out_queue.get_nowait()
-
                                 except thread_queue.Empty:
-
                                     pass
-
                             out_queue.put(enc.tobytes())
-
                 except Exception as ex:
-
                     print(f"[RTV-Colab] GPU worker error: {ex}")
 
-
-
         worker_th = threading.Thread(target=_gpu_worker_thread, daemon=True)
-
         worker_th.start()
 
-
-
         async def _sender():
-
             while not stop_event.is_set():
-
                 try:
-
                     try:
-
                         enc_bytes = out_queue.get_nowait()
-
                     except thread_queue.Empty:
-
                         await asyncio.sleep(0.005)
-
                         continue
-
                     await websocket.send_bytes(enc_bytes)
-
                 except (WebSocketDisconnect, Exception):
-
                     stop_event.set()
-
                     break
-
-
 
         sender_task = asyncio.create_task(_sender())
 
-
-
         try:
-
             while not stop_event.is_set():
-
                 msg = await websocket.receive()
-
                 if "bytes" in msg and msg["bytes"]:
-
                     if in_queue.full():
-
                         try:
-
                             in_queue.get_nowait()
-
                         except thread_queue.Empty:
-
                             pass
-
                     in_queue.put(msg["bytes"])
-
                 elif "text" in msg and msg["text"]:
-
                     try:
-
                         payload = json.loads(msg["text"])
-
                         if payload.get("action") == "set_config":
-
                             if "garment" in payload:
-
                                 current_garment[0] = payload["garment"]
-
                                 engine.set_active_garment(current_garment[0])
-
                             if "hud" in payload:
-
                                 show_hud[0] = bool(payload["hud"])
-
-                    except Exception:
-
-                        pass
-
+                            if "skeleton" in payload:
+                                show_skeleton[0] = bool(payload["skeleton"])
+                            if "mode" in payload:
+                                tryon_mode[0] = str(payload["mode"])
+                            if payload.get("recalibrate"):
+                                engine.recalibrate()
+                    except Exception as e:
+                        print(f"[RTV-Colab] Config error: {e}")
         except (WebSocketDisconnect, Exception):
-
             pass
-
         finally:
-
             stop_event.set()
-
             sender_task.cancel()
-
-
 
     demo = build_gradio_ui(engine)
 

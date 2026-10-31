@@ -292,3 +292,4 @@ class PhysicsInformedGarmentField(nn.Module):
             'uv_map': uv_map,
             'mask': mask_d
         }
+

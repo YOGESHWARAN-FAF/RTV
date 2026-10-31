@@ -348,3 +348,4 @@ class NeuralVirtualTryOnStreamProcessor:
             ambient_match=True,
             feather_ksize=3
         )
+

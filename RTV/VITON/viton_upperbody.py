@@ -22,6 +22,10 @@ from util.sequential_tracker import SequentialTryOnTracker
 # Enable cuDNN autotuner for maximum throughput
 torch.backends.cudnn.benchmark = True
 
+DEV_COUNT = torch.cuda.device_count()
+DEVICE_POSE = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
+DEVICE_GEN = torch.device('cuda:1' if DEV_COUNT >= 2 else ('cuda:0' if DEV_COUNT > 0 else 'cpu'))
+
 def make_pix2pix_model(name, input_nc, output_nc=3, model_name='pix2pixHD', ckpt_dir=None):
     opt = TestOptions().parse(save=False, use_default=True, show_info=False)
     opt.nThreads = 1

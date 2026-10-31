@@ -117,7 +117,7 @@ class ReferenceGarmentEncoder(nn.Module):
             
         if isinstance(garment_image_or_tensor, np.ndarray):
             # Convert BGR to RGB and normalize to [-1, 1]
-            img_rgb = garment_image_or_tensor[:, :, ::-1] if garment_image_or_tensor.shape[2] == 3 else garment_image_or_tensor
+            img_rgb = np.ascontiguousarray(garment_image_or_tensor[:, :, ::-1]) if garment_image_or_tensor.shape[2] == 3 else np.ascontiguousarray(garment_image_or_tensor)
             t = torch.from_numpy(img_rgb).float().permute(2, 0, 1).unsqueeze(0) / 127.5 - 1.0
         elif isinstance(garment_image_or_tensor, torch.Tensor):
             t = garment_image_or_tensor
@@ -136,3 +136,4 @@ class ReferenceGarmentEncoder(nn.Module):
 
     def clear_cache(self):
         self.feature_cache.clear()
+
