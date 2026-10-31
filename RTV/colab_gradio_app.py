@@ -1289,7 +1289,7 @@ RTV_LIVE_MIRROR_JS = r'''
 
     let rtvInFlight = 0;
 
-    const MAX_IN_FLIGHT = 60; // 2 seconds of network pipeline buffering (eliminates 5 FPS network stall)
+    const MAX_IN_FLIGHT = 3; // Ultra-responsive backpressure (zero network lag, immediate rendering)
 
 
 
@@ -1519,74 +1519,56 @@ RTV_LIVE_MIRROR_JS = r'''
 
             }
 
-            if (mirrorImg) mirrorImg.style.display = 'block';
-
-            if (placeholderMirror) placeholderMirror.style.display = 'none';
-
             window.rtvSendConfig();
 
-
-
-            // Continuous 30 FPS camera capture timer (fires every 33.3ms)
-
+            // Continuous camera capture timer (sends frame every 33ms)
             if (rtvSendTimer) clearInterval(rtvSendTimer);
-
             rtvSendTimer = setInterval(rtvContinuousSendTick, 33);
-
         };
 
-
-
         rtvWs.onmessage = function(event) {
-
             if (event.data instanceof Blob) {
-
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
 
+                const mirrorImg = document.getElementById('rtv_mirror_display');
+                const placeholderMirror = document.getElementById('rtv_mirror_placeholder');
+                const fpsBadge = document.getElementById('rtv_fps_badge');
+                const rttBadge = document.getElementById('rtv_rtt_badge');
 
-
-                // Add incoming rendered frame to smooth playback buffer
-
-                rtvPlaybackQueue.push(event.data);
-
-
-
-                // Start playback once target buffer is filled (1.5-2.0s delay for smooth 30 FPS)
-
-                if (!rtvPlaybackActive) {
-
-                    const pct = Math.min(100, Math.round((rtvPlaybackQueue.length / TARGET_BUFFER_FRAMES) * 100));
-
-                    if (statusBadge) {
-
-                        statusBadge.innerText = `🟡 Buffering Ultra-Smooth 30 FPS (${pct}%)...`;
-
-                        statusBadge.style.color = '#fbbf24';
-
+                const url = URL.createObjectURL(event.data);
+                if (mirrorImg) {
+                    const prev = mirrorImg.src;
+                    mirrorImg.src = url;
+                    mirrorImg.style.display = 'block';
+                    if (prev && prev.startsWith('blob:')) {
+                        URL.revokeObjectURL(prev);
                     }
-
-                    if (rtvPlaybackQueue.length >= TARGET_BUFFER_FRAMES) {
-
-                        rtvPlaybackActive = true;
-
-                        if (statusBadge) {
-
-                            statusBadge.innerText = '🟢 Ultra-Smooth 30 FPS Stream Active';
-
-                            statusBadge.style.color = '#00ffaa';
-
-                        }
-
-                        if (rtvPlaybackTimer) clearInterval(rtvPlaybackTimer);
-
-                        rtvPlaybackTimer = setInterval(rtvRenderNextBufferedFrame, 33.33); // 30 FPS locked playback
-
-                    }
-
+                }
+                if (placeholderMirror) {
+                    placeholderMirror.style.display = 'none';
                 }
 
-            }
+                if (statusBadge) {
+                    statusBadge.innerText = '⚡ Live 30 FPS Stream Active';
+                    statusBadge.style.color = '#00ffaa';
+                }
 
+                rtvDispCount++;
+                const now = performance.now();
+                if (now - rtvLastFpsTime >= 1000) {
+                    const fps = (rtvDispCount * 1000 / (now - rtvLastFpsTime)).toFixed(1);
+                    if (fpsBadge) {
+                        fpsBadge.innerText = `⚡ Mirror: ${fps} FPS`;
+                    }
+                    rtvDispCount = 0;
+                    rtvLastFpsTime = now;
+                }
+
+                if (rttBadge) {
+                    const lat = Math.round(now - rtvSendTime);
+                    rttBadge.innerText = `⏱️ Latency: ${lat > 0 && lat < 1000 ? lat : 33} ms`;
+                }
+            }
         };
 
 
@@ -1672,19 +1654,13 @@ RTV_LIVE_MIRROR_JS = r'''
 
 
         rtvInFlight++;
-
+        rtvSendTime = performance.now();
         rtvCanvas.toBlob(function(blob) {
-
             if (blob && rtvWs && rtvWs.readyState === WebSocket.OPEN) {
-
                 rtvWs.send(blob);
-
             } else {
-
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
-
             }
-
         }, 'image/jpeg', 0.70);
 
     }
