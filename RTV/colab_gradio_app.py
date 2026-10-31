@@ -2803,6 +2803,17 @@ def main():
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
     import uvicorn
+    try:
+        import websockets
+    except ImportError:
+        print("[RTV-Colab] Installing required 'websockets' library for live mirror streaming...")
+        try:
+            import subprocess
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "websockets", "uvicorn[standard]"])
+            import websockets
+            print("[RTV-Colab] 'websockets' installed successfully!")
+        except Exception as e:
+            print(f"[RTV-Colab] Warning: could not auto-install websockets: {e}")
 
 
 
