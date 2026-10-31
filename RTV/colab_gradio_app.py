@@ -1580,17 +1580,8 @@ RTV_LIVE_MIRROR_JS = r'''
 })();
 '''
 
-def build_gradio_ui(engine: ColabTryOnEngine):
-
-    garment_choices = list(GARMENT_CATALOG.keys())
-
-    
-
-    # Custom CSS for Sleek Dark Cyber Aesthetic
-
-    custom_css = """
-
-    body { background-color: #0a0b10 !important; color: #e2e8f0 !important; font-family: 'Segoe UI', system-ui, sans-serif; }
+RTV_CUSTOM_CSS = """
+body { background-color: #0a0b10 !important; color: #e2e8f0 !important; font-family: 'Segoe UI', system-ui, sans-serif; }
 
     .gradio-container { max-width: 1400px !important; margin: auto; }
 
@@ -1667,8 +1658,16 @@ def build_gradio_ui(engine: ColabTryOnEngine):
         border: 1px solid #252a42;
 
     }
+"""
 
-    """
+def build_gradio_ui(engine: ColabTryOnEngine):
+
+    garment_choices = list(GARMENT_CATALOG.keys())
+
+    
+
+    # Using global RTV_CUSTOM_CSS
+    custom_css = RTV_CUSTOM_CSS
 
 
 
@@ -1678,7 +1677,7 @@ def build_gradio_ui(engine: ColabTryOnEngine):
 
 
 
-    with gr.Blocks(title="RTV Real-Time Virtual Try-On", css=custom_css, theme=gr.themes.Monochrome()) as demo:
+    with gr.Blocks(title="RTV Real-Time Virtual Try-On") as demo:
 
         # Header Section
 
@@ -3099,7 +3098,7 @@ def main():
     mount_kwargs = {
         "path": "/",
         "head": f"<script>\n{RTV_LIVE_MIRROR_JS}\n</script>",
-        "css": custom_css,
+        "css": RTV_CUSTOM_CSS,
         "theme": gr.themes.Monochrome(),
         "allowed_paths": [os.path.abspath("./assets"), os.path.abspath("./rtv_ckpts")]
     }
