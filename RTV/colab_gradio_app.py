@@ -2878,7 +2878,7 @@ def main():
 
     import asyncio
 
-    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
 
     import uvicorn
     try:
