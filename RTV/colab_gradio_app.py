@@ -99,6 +99,26 @@ if RTV_DIR not in sys.path:
 
 
 
+# Auto-check and install runtime dependencies if missing (PyGLM, websockets)
+try:
+    import glm
+except ImportError:
+    print("[RTV] Missing 'glm' module. Installing 'PyGLM'...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "PyGLM"])
+        import glm
+        print("[RTV] 'PyGLM' installed successfully!")
+    except Exception as e:
+        print(f"[RTV] Warning: could not auto-install PyGLM: {e}")
+
+try:
+    import websockets
+except ImportError:
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "websockets", "uvicorn[standard]"])
+    except Exception:
+        pass
+
 from VITON.viton_fullbody_seq import FullBodySeqFrameProcessor
 
 from VITON.viton_upperbody import FrameProcessor

@@ -1,5 +1,8 @@
 import numpy as np
-import glm
+try:
+    import glm
+except ImportError:
+    glm = None
 
 def projection2screencoord(v,view,projection,height,width,hw=False):
 
