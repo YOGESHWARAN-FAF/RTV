@@ -82,15 +82,21 @@ class FrameProcessor:
 
     def load_all_models(self):
         for i, garment_name in enumerate(self.garment_name_list):
-            new_model = make_pix2pix_model(garment_name, 6, output_nc=4, ckpt_dir=self.ckpt_dir)
-            if self.viton_model_list[i] is None:
-                self.viton_model_list[i] = new_model
+            try:
+                new_model = make_pix2pix_model(garment_name, 6, output_nc=4, ckpt_dir=self.ckpt_dir)
+                if self.viton_model_list[i] is None:
+                    self.viton_model_list[i] = new_model
+            except Exception as e:
+                print(f"[RTV] Note: could not pre-load garment '{garment_name}': {e}")
 
     def load_one_models(self, garment_name):
-        new_model = make_pix2pix_model(garment_name, 6, output_nc=4, ckpt_dir=self.ckpt_dir)
-        id = self.garment_name_list.index(garment_name)
-        if self.viton_model_list[id] is None:
-            self.viton_model_list[id] = new_model
+        try:
+            new_model = make_pix2pix_model(garment_name, 6, output_nc=4, ckpt_dir=self.ckpt_dir)
+            id = self.garment_name_list.index(garment_name)
+            if self.viton_model_list[id] is None:
+                self.viton_model_list[id] = new_model
+        except Exception as e:
+            print(f"[RTV] Note: could not load garment '{garment_name}': {e}")
 
     def switch_to_target_garment(self, garment_id):
         self.lock.acquire()

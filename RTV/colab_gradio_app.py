@@ -508,10 +508,12 @@ class ColabTryOnEngine:
         with self.lock:
             if self.upperbody_processor is None:
                 print(f"[RTV-Colab] Initializing FrameProcessor for upperbody ({target_id})...")
-                garments = [
+                garments = [g for g in [
                     'lab_03_vmsdp2ta', 'lab_04_vmsdp2ta', 'lab_07_vmsdp2ta',
                     'jin_17_vmsdp2ta', 'jin_18_vmsdp2ta', 'jin_22_vmsdp2ta', 'rcb_jersey_18'
-                ]
+                ] if os.path.exists(os.path.join("./rtv_ckpts", g, "latest_net_G.pth"))]
+                if not garments:
+                    garments = ['lab_03_vmsdp2ta']
                 self.upperbody_processor = FrameProcessor(garments)
             
             try:
@@ -1069,6 +1071,54 @@ RTV_LIVE_MIRROR_JS = r'''
     if (window._rtvEngineReady) return;
     window._rtvEngineReady = true;
 
+
+    let rtvUseHttp = false;
+
+    async function renderReceivedBlob(blob) {
+        const canvas = document.getElementById('rtv_mirror_canvas');
+        const placeholder = document.getElementById('rtv_mirror_placeholder');
+        const fpsBadge = document.getElementById('rtv_fps_badge');
+        const rttBadge = document.getElementById('rtv_rtt_badge');
+        const statusBadge = document.getElementById('rtv_ws_status');
+
+        try {
+            const bitmap = await createImageBitmap(blob);
+            if (canvas) {
+                if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(bitmap, 0, 0);
+                canvas.style.display = 'block';
+                bitmap.close();
+            }
+            if (placeholder) placeholder.style.display = 'none';
+            if (statusBadge && rtvRunning && (statusBadge.innerText.includes('Connecting') || statusBadge.innerText.includes('Standby'))) {
+                statusBadge.innerText = rtvUseHttp ? '⚡ Live 30 FPS Stream Active (HTTP)' : '⚡ Live 30 FPS Stream Active (WS)';
+                statusBadge.style.color = '#00ffaa';
+            }
+        } catch (renderErr) {
+            console.error('[RTV] Frame render error:', renderErr);
+        }
+
+        rtvDispCount++;
+        const now = performance.now();
+        if (now - rtvLastFpsTime >= 1000) {
+            const fps = (rtvDispCount * 1000 / (now - rtvLastFpsTime)).toFixed(1);
+            if (fpsBadge) {
+                fpsBadge.innerText = `⚡ Mirror: ${fps} FPS`;
+            }
+            rtvDispCount = 0;
+            rtvLastFpsTime = now;
+        }
+
+        if (rttBadge) {
+            const lat = Math.round(now - rtvSendTime);
+            rttBadge.innerText = `⏱️ Latency: ${lat > 0 && lat < 1000 ? lat : 28} ms`;
+        }
+    }
+
     let rtvWs = null;
     let rtvRunning = false;
     let rtvInFlight = 0;
@@ -1203,57 +1253,31 @@ RTV_LIVE_MIRROR_JS = r'''
         rtvWs.onmessage = async function(event) {
             if (event.data instanceof Blob) {
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
-
-                const canvas = document.getElementById('rtv_mirror_canvas');
-                const placeholder = document.getElementById('rtv_mirror_placeholder');
-                const fpsBadge = document.getElementById('rtv_fps_badge');
-                const rttBadge = document.getElementById('rtv_rtt_badge');
-                const statusBadge = document.getElementById('rtv_ws_status');
-
-                try {
-                    const bitmap = await createImageBitmap(event.data);
-                    if (canvas) {
-                        if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
-                            canvas.width = bitmap.width;
-                            canvas.height = bitmap.height;
-                        }
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(bitmap, 0, 0);
-                        canvas.style.display = 'block';
-                        bitmap.close();
-                    }
-                    if (placeholder) placeholder.style.display = 'none';
-                    if (statusBadge && rtvRunning && statusBadge.innerText.includes('Connecting')) {
-                        statusBadge.innerText = '⚡ Live 30 FPS Stream Active';
-                        statusBadge.style.color = '#00ffaa';
-                    }
-                } catch (renderErr) {
-                    console.error('[RTV] Frame render error:', renderErr);
-                }
-
-                rtvDispCount++;
-                const now = performance.now();
-                if (now - rtvLastFpsTime >= 1000) {
-                    const fps = (rtvDispCount * 1000 / (now - rtvLastFpsTime)).toFixed(1);
-                    if (fpsBadge) {
-                        fpsBadge.innerText = `⚡ Mirror: ${fps} FPS`;
-                    }
-                    rtvDispCount = 0;
-                    rtvLastFpsTime = now;
-                }
-
-                if (rttBadge) {
-                    const lat = Math.round(now - rtvSendTime);
-                    rttBadge.innerText = `⏱️ Latency: ${lat > 0 && lat < 1000 ? lat : 28} ms`;
-                }
+                await renderReceivedBlob(event.data);
             }
         };
 
         rtvWs.onerror = function(err) {
-            console.error('[RTV] WebSocket error:', err);
+            console.warn('[RTV] WebSocket unavailable or blocked by tunnel; automatically switching to HTTP Stream Blit...', err);
+            rtvUseHttp = true;
             if (statusBadge) {
-                statusBadge.innerText = '⚠️ WS Error';
-                statusBadge.style.color = '#f87171';
+                statusBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
+                statusBadge.style.color = '#00ffaa';
+            }
+            if (btnStart) btnStart.disabled = true;
+            if (btnStop) {
+                btnStop.disabled = false;
+                btnStop.style.opacity = '1.0';
+                btnStop.style.background = '#ef4444';
+                btnStop.style.color = '#ffffff';
+                btnStop.style.cursor = 'pointer';
+            }
+            if (!rtvSendTimer) {
+                rtvRunning = true;
+                rtvInFlight = 0;
+                rtvDispCount = 0;
+                rtvLastFpsTime = performance.now();
+                rtvSendTimer = setInterval(rtvContinuousSendTick, 33);
             }
         };
 
@@ -1269,7 +1293,8 @@ RTV_LIVE_MIRROR_JS = r'''
     };
 
     function rtvContinuousSendTick() {
-        if (!rtvRunning || !rtvWs || rtvWs.readyState !== WebSocket.OPEN) return;
+        if (!rtvRunning) return;
+        if (!rtvUseHttp && (!rtvWs || rtvWs.readyState !== WebSocket.OPEN)) return;
         if (rtvInFlight >= MAX_IN_FLIGHT) {
             if (performance.now() - rtvSendTime > 150) {
                 rtvInFlight = 0; // Auto-recover from lost frame
@@ -1296,8 +1321,41 @@ RTV_LIVE_MIRROR_JS = r'''
 
         rtvInFlight++;
         rtvSendTime = performance.now();
-        rtvCanvas.toBlob(function(blob) {
-            if (blob && rtvWs && rtvWs.readyState === WebSocket.OPEN) {
+        rtvCanvas.toBlob(async function(blob) {
+            if (!blob || !rtvRunning) {
+                rtvInFlight = Math.max(0, rtvInFlight - 1);
+                return;
+            }
+            if (rtvUseHttp) {
+                const garmentEl = document.getElementById('rtv_ws_garment');
+                const hudEl = document.getElementById('rtv_ws_hud');
+                const skelEl = document.getElementById('rtv_ws_skeleton');
+                const garment = garmentEl ? garmentEl.value : 'Lab Coat 03 (Upper-Body)';
+                const hud = hudEl ? String(hudEl.checked) : 'true';
+                const skeleton = skelEl ? String(skelEl.checked) : 'false';
+                const mode = window.rtvActiveMode || 'LIVE';
+
+                try {
+                    const resp = await fetch('/api/live_mirror_frame', {
+                        method: 'POST',
+                        headers: {
+                            'X-Garment': garment,
+                            'X-Mode': mode,
+                            'X-Hud': hud,
+                            'X-Skeleton': skeleton
+                        },
+                        body: blob
+                    });
+                    if (resp.ok) {
+                        const outBlob = await resp.blob();
+                        await renderReceivedBlob(outBlob);
+                    }
+                } catch (fetchErr) {
+                    console.warn('[RTV] HTTP stream frame error:', fetchErr);
+                } finally {
+                    rtvInFlight = Math.max(0, rtvInFlight - 1);
+                }
+            } else if (rtvWs && rtvWs.readyState === WebSocket.OPEN) {
                 rtvWs.send(blob);
             } else {
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
@@ -1830,7 +1888,7 @@ def build_gradio_ui(engine: ColabTryOnEngine):
                     </div>
                 </div>
                 """
-                gr.HTML(realtime_mirror_html + f"<script>\n{RTV_LIVE_MIRROR_JS}\n</script>")
+                gr.HTML(realtime_mirror_html)
 
                 with gr.Accordion("📸 Instant Snapshot Try-On (High-Res Photo Mode)", open=False):
                     with gr.Row():
@@ -2894,6 +2952,46 @@ def main():
     if os.path.exists("./rtv_ckpts"):
         fastapi_app.mount("/rtv_ckpts", StaticFiles(directory="./rtv_ckpts"), name="rtv_ckpts")
 
+    @fastapi_app.post("/api/live_mirror_frame")
+    async def live_mirror_frame_post(request: Request):
+        """
+        Zero-dependency HTTP streaming frame endpoint.
+        Used as transparent fallback when WebSocket upgrades are blocked (e.g. by gradio.live tunnels).
+        """
+        garment = request.headers.get("X-Garment", engine.active_garment_label)
+        tryon_mode = request.headers.get("X-Mode", "LIVE")
+        show_hud = request.headers.get("X-Hud", "true").lower() == "true"
+        show_skeleton = request.headers.get("X-Skeleton", "false").lower() == "true"
+        recalibrate = request.headers.get("X-Recalibrate", "false").lower() == "true"
+
+        if recalibrate:
+            engine.recalibrate()
+
+        raw_bytes = await request.body()
+        if not raw_bytes:
+            return Response(status_code=400)
+
+        np_arr = np.frombuffer(raw_bytes, np.uint8)
+        frame_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        if frame_bgr is None:
+            return Response(status_code=400)
+
+        out_bgr = engine.process_stream_frame_bgr(
+            frame_bgr,
+            garment_label=garment,
+            tryon_mode=tryon_mode,
+            show_hud=show_hud,
+            show_skeleton=show_skeleton
+        )
+        if out_bgr is None:
+            out_bgr = frame_bgr
+
+        success, enc = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+        if not success:
+            return Response(status_code=500)
+
+        return Response(content=enc.tobytes(), media_type="image/jpeg")
+
     @fastapi_app.websocket("/api/live_mirror")
     async def live_mirror_ws(websocket: WebSocket):
         await websocket.accept()
@@ -2999,11 +3097,11 @@ def main():
     demo.queue()
 
     mount_kwargs = {
-
         "path": "/",
-
-        "head": f"<script>\n{RTV_LIVE_MIRROR_JS}\n</script>"
-
+        "head": f"<script>\n{RTV_LIVE_MIRROR_JS}\n</script>",
+        "css": custom_css,
+        "theme": gr.themes.Monochrome(),
+        "allowed_paths": [os.path.abspath("./assets"), os.path.abspath("./rtv_ckpts")]
     }
 
     import inspect
