@@ -3034,7 +3034,52 @@ def build_gradio_ui(engine: ColabTryOnEngine):
 
 
 def launch_cloud_tunnel(port=7860):
-    return
+    """
+    Launches high-speed Cloudflare Edge Tunnel in the background.
+    Cloudflare Anycast edge servers provide:
+    - Real HTTPS for camera access
+    - Direct binary WebSocket support (wss://) for zero-lag 30 FPS mirror
+    - Sub-30ms network roundtrip (bypassing slow Gradio US proxy tunnels)
+    """
+    if platform.system() == "Windows":
+        return
+
+    import re
+    cf_bin = "/tmp/cloudflared"
+    if not os.path.exists(cf_bin):
+        try:
+            print("[RTV] Downloading high-speed Cloudflare Edge Tunnel client...")
+            subprocess.run(
+                f"curl -sLo {cf_bin} https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 && chmod +x {cf_bin}",
+                shell=True,
+                check=False
+            )
+        except Exception as e:
+            print(f"[RTV] Cloudflare download notice: {e}")
+            return
+
+    if not os.path.exists(cf_bin) or not os.access(cf_bin, os.X_OK):
+        return
+
+    def _tunnel_worker():
+        time.sleep(2)
+        try:
+            cmd = [cf_bin, "tunnel", "--url", f"http://127.0.0.1:{port}"]
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            for line in proc.stdout:
+                m = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", line)
+                if m:
+                    tunnel_url = m.group(0)
+                    print("\n" + "=" * 70)
+                    print("  ⚡ HIGH-SPEED ZERO-LAG 30 FPS MIRROR LINK (Click to open!):")
+                    print(f"  👉 {tunnel_url}")
+                    print("  (Supports binary WebSockets + Local Edge Low Latency)")
+                    print("=" * 70 + "\n")
+                    break
+        except Exception as te:
+            print(f"[RTV] Cloudflare tunnel notice: {te}")
+
+    threading.Thread(target=_tunnel_worker, daemon=True).start()
 
 def main():
 
@@ -3168,7 +3213,7 @@ def main():
         if out_bgr is None:
             out_bgr = frame_bgr
 
-        success, enc = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+        success, enc = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
         if not success:
             return Response(status_code=500)
 
@@ -3212,7 +3257,7 @@ def main():
                             show_hud=show_hud[0],
                             show_skeleton=show_skeleton[0]
                         )
-                        success, enc = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+                        success, enc = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
                         if success:
                             if out_queue.full():
                                 try:
