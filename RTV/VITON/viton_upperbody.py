@@ -20,7 +20,8 @@ from util.cv2_trans_util import decompose_affine, compose_affine
 from util.sequential_tracker import SequentialTryOnTracker
 
 # Enable cuDNN autotuner for maximum throughput
-torch.backends.cudnn.benchmark = True
+if torch.backends.cudnn.enabled:
+    torch.backends.cudnn.benchmark = False
 
 DEV_COUNT = torch.cuda.device_count()
 DEVICE_POSE = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
@@ -50,6 +51,7 @@ class FrameProcessor:
     def __init__(self, garment_name_list, ckpt_dir=None):
         self.smpl_regressor = SMPL_Regressor(use_bev=True)
         self.viton_model = None
+        self.current_garment_id = -1
         self.ckpt_dir = ckpt_dir
         self.densepose_extractor = DensePoseExtractor()
         self.dis_flow = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
@@ -99,6 +101,8 @@ class FrameProcessor:
             print(f"[RTV] Note: could not load garment '{garment_name}': {e}")
 
     def switch_to_target_garment(self, garment_id):
+        if getattr(self, 'current_garment_id', -1) == garment_id and self.viton_model is not None:
+            return
         self.lock.acquire()
         print(f"[RTV] Loading target garment id: {garment_id}")
         id = garment_id
@@ -108,7 +112,8 @@ class FrameProcessor:
 
         old_model = self.viton_model
         if garment_id >= 0 and self.viton_model_list[id] is not None:
-            new_model = self.viton_model_list[id].to('cuda:0').eval()
+            new_model = self.viton_model_list[id].to(DEVICE_GEN).eval()
+            self.current_garment_id = garment_id
         else:
             new_model = None
 
@@ -116,7 +121,7 @@ class FrameProcessor:
             del self.viton_model
         self.viton_model = new_model
 
-        if old_model is not None:
+        if old_model is not None and old_model is not new_model:
             old_model = old_model.to('cpu')
             del old_model
             torch.cuda.empty_cache()
@@ -204,8 +209,18 @@ class FrameProcessor:
             try:
                 if self.viton_model is None:
                     return None
+                try:
+                    m_dev = next(self.viton_model.parameters()).device
+                except Exception:
+                    m_dev = DEVICE_GEN
+                if m_dev.type == 'cpu' and torch.cuda.is_available():
+                    self.viton_model = self.viton_model.to(DEVICE_GEN)
+                    m_dev = DEVICE_GEN
+                if in_tensor.device != m_dev:
+                    in_tensor = in_tensor.to(m_dev)
+
                 with torch.inference_mode():
-                    target_tensor = self.viton_model.forward(in_tensor)
+                        target_tensor = self.viton_model.forward(in_tensor)
             finally:
                 self.lock.release()
 
@@ -357,8 +372,17 @@ class FrameProcessor:
         try:
             if self.viton_model is None:
                 return None
-            with torch.inference_mode():
-                target_tensor = self.viton_model.forward(in_tensor)
+            try:
+                m_dev = next(self.viton_model.parameters()).device
+            except Exception:
+                m_dev = DEVICE_GEN
+            if m_dev.type == 'cpu' and torch.cuda.is_available():
+                self.viton_model = self.viton_model.to(DEVICE_GEN)
+                m_dev = DEVICE_GEN
+            if in_tensor.device != m_dev:
+                in_tensor = in_tensor.to(m_dev)
+                with torch.inference_mode():
+                    target_tensor = self.viton_model.forward(in_tensor)
         finally:
             self.lock.release()
 

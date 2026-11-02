@@ -599,7 +599,8 @@ class ColabTryOnEngine:
                     self.upperbody_processor.garment_name_list.append(target_id)
                     self.upperbody_processor.viton_model_list.append(None)
                 idx = self.upperbody_processor.garment_name_list.index(target_id)
-                self.upperbody_processor.switch_to_target_garment(idx)
+                if getattr(self.upperbody_processor, "current_garment_id", -1) != idx or self.upperbody_processor.viton_model is None:
+                    self.upperbody_processor.switch_to_target_garment(idx)
             except Exception as e:
                 print(f"[RTV-Colab] Upperbody switch warning: {e}")
             return self.upperbody_processor
