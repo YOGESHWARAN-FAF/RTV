@@ -3,6 +3,11 @@ import glob
 import logging
 import os
 import sys
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", message=".*meshgrid.*")
+warnings.filterwarnings("ignore", message=".*is_fx_tracing.*")
 from typing import Any, ClassVar, Dict, List
 import torch
 import copy

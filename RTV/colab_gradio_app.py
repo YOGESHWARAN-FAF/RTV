@@ -29,6 +29,13 @@ import os
 # Enable expandable segments to eliminate PyTorch CUDA memory fragmentation
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", message=".*meshgrid.*")
+warnings.filterwarnings("ignore", message=".*is_fx_tracing.*")
+
 import sys
 
 import asyncio
@@ -1273,6 +1280,11 @@ RTV_LIVE_MIRROR_JS = r'''
 
             if (video) {
                 video.srcObject = stream;
+                video.muted = true;
+                video.defaultMuted = true;
+                video.playsInline = true;
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
                 try {
                     await video.play();
                 } catch (playErr) {
@@ -1406,12 +1418,13 @@ RTV_LIVE_MIRROR_JS = r'''
             }
         };
 
-        rtvWs.onclose = function() {
+        rtvWs.onclose = function(e) {
+            console.log('[RTV] WebSocket closed. Seamless fallback to HTTP streaming active.', e);
             if (rtvRunning) {
-                window.rtvStopMirror();
+                rtvUseHttp = true;
                 if (statusBadge) {
-                    statusBadge.innerText = '⚪ Disconnected';
-                    statusBadge.style.color = '#94a3b8';
+                    statusBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
+                    statusBadge.style.color = '#00ffaa';
                 }
             }
         };
