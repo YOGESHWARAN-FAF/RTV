@@ -108,7 +108,17 @@ class ROMP(nn.Module):
             center_maps, params_maps = self.ort_session.run(None, {'image':input_image.numpy().astype(np.float32)})
             center_maps, params_maps = torch.from_numpy(center_maps).to(self.tdevice), torch.from_numpy(params_maps).to(self.tdevice)
         else:
-            center_maps, params_maps = self.model(input_image.to(self.tdevice))
+            try:
+                center_maps, params_maps = self.model(input_image.to(self.tdevice))
+            except RuntimeError as e:
+                if ("CUDNN" in str(e) or "cudnn" in str(e)) and torch.backends.cudnn.enabled:
+                    print(f"[ROMP] cuDNN error encountered: {e}. Switching to PyTorch native CUDA kernels.")
+                    torch.backends.cudnn.enabled = False
+                    torch.backends.cudnn.benchmark = False
+                    torch.cuda.empty_cache()
+                    center_maps, params_maps = self.model(input_image.to(self.tdevice))
+                else:
+                    raise e
         params_maps[:, 0] = torch.pow(1.1, params_maps[:, 0])
         parsed_results = parsing_outputs(center_maps, params_maps, self.centermap_parser)
         return parsed_results, image_pad_info

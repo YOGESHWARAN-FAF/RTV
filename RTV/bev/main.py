@@ -121,7 +121,17 @@ class BEV(nn.Module):
 
     def single_image_forward(self, image):
         input_image, image_pad_info = img_preprocess(image)
-        parsed_results = self.model(input_image.to(self.tdevice))
+        try:
+            parsed_results = self.model(input_image.to(self.tdevice))
+        except RuntimeError as e:
+            if ("CUDNN" in str(e) or "cudnn" in str(e)) and torch.backends.cudnn.enabled:
+                print(f"[BEV] cuDNN error encountered: {e}. Switching to PyTorch native CUDA kernels.")
+                torch.backends.cudnn.enabled = False
+                torch.backends.cudnn.benchmark = False
+                torch.cuda.empty_cache()
+                parsed_results = self.model(input_image.to(self.tdevice))
+            else:
+                raise e
         if parsed_results is None:
             return None, image_pad_info
         parsed_results.update(pack_params_dict(parsed_results['params_pred']))

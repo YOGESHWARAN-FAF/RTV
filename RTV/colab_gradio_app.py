@@ -64,6 +64,24 @@ if platform.system() != "Windows":
     os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
 
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    # Discover and preload pip-installed nvidia/cudnn/lib sublibraries to prevent CUDNN_STATUS_SUBLIBRARY_LOADING_FAILED
+    try:
+        import site
+        import ctypes
+        for sp in site.getsitepackages() + [site.getusersitepackages()]:
+            c_dir = os.path.join(sp, "nvidia", "cudnn", "lib")
+            if os.path.isdir(c_dir):
+                c_ld = os.environ.get("LD_LIBRARY_PATH", "")
+                if c_dir not in c_ld:
+                    os.environ["LD_LIBRARY_PATH"] = f"{c_dir}:{c_ld}"
+                for fname in sorted(os.listdir(c_dir)):
+                    if fname.startswith("libcudnn") and (".so" in fname):
+                        try:
+                            ctypes.CDLL(os.path.join(c_dir, fname), mode=ctypes.RTLD_GLOBAL)
+                        except Exception:
+                            pass
+    except Exception:
+        pass
 
 
 
@@ -83,6 +101,22 @@ if torch.cuda.is_available():
 
     # Disable cudnn.benchmark for webcam streaming to prevent internal CUDNN errors on dynamic frame shapes
     torch.backends.cudnn.benchmark = False
+
+    # Check if user requested disabling cuDNN or if cuDNN has sublibrary loading issues
+    if os.environ.get("RTV_NO_CUDNN") == "1":
+        print("[RTV] RTV_NO_CUDNN=1 set: cuDNN disabled. Running on native PyTorch CUDA acceleration.")
+        torch.backends.cudnn.enabled = False
+    else:
+        try:
+            _dev = torch.device("cuda:0")
+            _tx = torch.zeros(1, 32, 64, 64, device=_dev)
+            _tconv = torch.nn.Conv2d(32, 32, 3, padding=1, device=_dev)
+            _ty = _tconv(_tx)
+            del _tx, _tconv, _ty
+            torch.cuda.empty_cache()
+        except Exception as _ce:
+            print(f"[RTV] cuDNN descriptor test failed ({_ce}). Disabling cuDNN, switching to native PyTorch CUDA acceleration.")
+            torch.backends.cudnn.enabled = False
 
 
 
@@ -646,7 +680,15 @@ class ColabTryOnEngine:
                     with self.lock:
                         self.body_detected = False
             except Exception as e:
-                print(f"[RTV-Colab] Background ML inference error: {e}")
+                err_msg = str(e)
+                if ("CUDNN" in err_msg or "cudnn" in err_msg) and torch.backends.cudnn.enabled:
+                    print(f"\n[RTV-Colab] cuDNN error caught: {err_msg}")
+                    print("[RTV-Colab] Auto-disabling cuDNN to prevent stream drops. Native CUDA mode active.\n")
+                    torch.backends.cudnn.enabled = False
+                    torch.backends.cudnn.benchmark = False
+                    torch.cuda.empty_cache()
+                else:
+                    print(f"[RTV-Colab] Background ML inference error: {e}")
 
             time.sleep(0.005)
 
@@ -1269,15 +1311,40 @@ RTV_LIVE_MIRROR_JS = r'''
 
             window.rtvSendConfig();
 
+            // Tunnel Watchdog: If WebSocket connected but after 1200ms no frames were delivered to the mirror,
+            // it means gradio.live or a proxy tunnel is silently dropping downstream binary WS frames.
+            // Automatically switch to rock-solid HTTP stream blit.
+            setTimeout(() => {
+                if (rtvRunning && rtvDispCount === 0 && !rtvUseHttp) {
+                    console.warn('[RTV] WebSocket connected but 0 frames received (tunnel proxy dropping binary WS). Auto-switching to HTTP Direct Blit...');
+                    rtvUseHttp = true;
+                    if (rtvWs) {
+                        try { rtvWs.close(); } catch(e){}
+                        rtvWs = null;
+                    }
+                    const sBadge = document.getElementById('rtv_ws_status');
+                    if (sBadge) {
+                        sBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
+                        sBadge.style.color = '#00ffaa';
+                    }
+                }
+            }, 1200);
+
             // Continuous camera capture timer (sends frame every 33ms = 30 FPS)
             if (rtvSendTimer) clearInterval(rtvSendTimer);
             rtvSendTimer = setInterval(rtvContinuousSendTick, 33);
         };
 
         rtvWs.onmessage = async function(event) {
-            if (event.data instanceof Blob) {
+            let blob = event.data;
+            if (event.data instanceof ArrayBuffer) {
+                blob = new Blob([event.data], { type: 'image/jpeg' });
+            }
+            if (blob instanceof Blob) {
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
-                await renderReceivedBlob(event.data);
+                await renderReceivedBlob(blob);
+            } else {
+                rtvInFlight = Math.max(0, rtvInFlight - 1);
             }
         };
 
@@ -1318,7 +1385,14 @@ RTV_LIVE_MIRROR_JS = r'''
 
     function rtvContinuousSendTick() {
         if (!rtvRunning) return;
-        if (!rtvUseHttp && (!rtvWs || rtvWs.readyState !== WebSocket.OPEN)) return;
+        if (!rtvUseHttp && (!rtvWs || rtvWs.readyState !== WebSocket.OPEN)) {
+            rtvUseHttp = true;
+            const sBadge = document.getElementById('rtv_ws_status');
+            if (sBadge && rtvRunning) {
+                sBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
+                sBadge.style.color = '#00ffaa';
+            }
+        }
         if (rtvInFlight >= MAX_IN_FLIGHT) {
             if (performance.now() - rtvSendTime > 150) {
                 rtvInFlight = 0; // Auto-recover from lost frame
@@ -2929,8 +3003,14 @@ def main():
     parser.add_argument("--server_name", type=str, default=default_host, help="Server host IP")
 
     parser.add_argument("--no_share", action="store_true", help="Disable public link sharing")
+    parser.add_argument("--no_cudnn", action="store_true", default=False, help="Disable cuDNN and use native PyTorch CUDA kernels")
 
     args = parser.parse_args()
+
+    if args.no_cudnn or os.environ.get("RTV_NO_CUDNN") == "1":
+        print("[RTV] cuDNN disabled via flag/env. Running on native PyTorch CUDA acceleration.")
+        torch.backends.cudnn.enabled = False
+        torch.backends.cudnn.benchmark = False
 
     # Reset sys.argv so internal libraries/argparse instances don't see Gradio launcher flags
 
