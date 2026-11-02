@@ -218,9 +218,8 @@ class FrameProcessor:
                     m_dev = DEVICE_GEN
                 if in_tensor.device != m_dev:
                     in_tensor = in_tensor.to(m_dev)
-
                 with torch.inference_mode():
-                        target_tensor = self.viton_model.forward(in_tensor)
+                    target_tensor = self.viton_model.forward(in_tensor)
             finally:
                 self.lock.release()
 
@@ -381,8 +380,8 @@ class FrameProcessor:
                 m_dev = DEVICE_GEN
             if in_tensor.device != m_dev:
                 in_tensor = in_tensor.to(m_dev)
-                with torch.inference_mode():
-                    target_tensor = self.viton_model.forward(in_tensor)
+            with torch.inference_mode():
+                target_tensor = self.viton_model.forward(in_tensor)
         finally:
             self.lock.release()
 
