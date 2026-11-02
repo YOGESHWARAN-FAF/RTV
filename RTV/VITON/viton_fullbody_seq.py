@@ -173,7 +173,7 @@ class FullBodySeqFrameProcessor:
             with self.lock:
                 if self.viton_model is None:
                     return None
-                with torch.inference_mode(), torch.autocast(device_type='cuda', dtype=torch.float16):
+                with torch.inference_mode():
                     target_tensor = self.viton_model.forward(in_tensor)
 
             # Direct GPU Postprocessing
@@ -317,7 +317,7 @@ class FullBodySeqFrameProcessor:
         with self.lock:
             if self.viton_model is None:
                 return None
-            with torch.inference_mode(), torch.autocast(device_type='cuda', dtype=torch.float16):
+            with torch.inference_mode():
                 target_tensor = self.viton_model.forward(in_tensor)
 
         # Direct GPU Postprocessing

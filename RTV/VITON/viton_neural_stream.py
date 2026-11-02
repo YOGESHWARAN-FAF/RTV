@@ -250,7 +250,7 @@ class NeuralVirtualTryOnStreamProcessor:
 
         # 4. Neural Cross-Attention Synthesis
         with self.lock:
-            with torch.inference_mode(), torch.autocast(device_type='cuda', dtype=torch.float16 if torch.cuda.is_available() else torch.float32):
+            with torch.inference_mode():
                 output_tensor = self.generator(cond_tensor, self.active_ref_pyramid)
 
         # Extract RGB [0, 255] and Alpha [0, 255]

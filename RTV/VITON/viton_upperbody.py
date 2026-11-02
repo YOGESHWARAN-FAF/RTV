@@ -204,7 +204,7 @@ class FrameProcessor:
             try:
                 if self.viton_model is None:
                     return None
-                with torch.inference_mode(), torch.autocast(device_type='cuda', dtype=torch.float16):
+                with torch.inference_mode():
                     target_tensor = self.viton_model.forward(in_tensor)
             finally:
                 self.lock.release()
@@ -357,7 +357,7 @@ class FrameProcessor:
         try:
             if self.viton_model is None:
                 return None
-            with torch.inference_mode(), torch.autocast(device_type='cuda', dtype=torch.float16):
+            with torch.inference_mode():
                 target_tensor = self.viton_model.forward(in_tensor)
         finally:
             self.lock.release()
