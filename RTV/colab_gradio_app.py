@@ -3062,9 +3062,21 @@ def launch_cloud_tunnel(port=7860):
         return
 
     def _tunnel_worker():
-        time.sleep(2)
+        # Wait until port is actively listening before spawning tunnel to eliminate HTTP 404
+        import socket
+        for _ in range(60):
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=0.8):
+                    break
+            except Exception:
+                time.sleep(0.8)
+
         try:
-            cmd = [cf_bin, "tunnel", "--url", f"http://127.0.0.1:{port}"]
+            cmd = [
+                cf_bin, "tunnel",
+                "--url", f"http://127.0.0.1:{port}",
+                "--http-host-header", f"localhost:{port}"
+            ]
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for line in proc.stdout:
                 m = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", line)
