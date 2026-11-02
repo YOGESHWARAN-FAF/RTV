@@ -55,6 +55,26 @@ import subprocess
 
 import shutil
 
+# Ensure working directory is always RTV directory
+RTV_DIR = os.path.abspath(os.path.dirname(__file__))
+if os.getcwd() != RTV_DIR:
+    os.chdir(RTV_DIR)
+if RTV_DIR not in sys.path:
+    sys.path.insert(0, RTV_DIR)
+
+# Auto-detect and switch to dedicated virtual environment if running in system Python
+if sys.prefix == getattr(sys, "base_prefix", sys.prefix) and "RTV_VENV_SWITCHED" not in os.environ:
+    for cand in [
+        os.path.expanduser("~/Downloads/RTV/ROMP_repo/simple_romp/venv"),
+        os.path.join(RTV_DIR, "../ROMP_repo/simple_romp/venv"),
+        os.path.join(RTV_DIR, "../venv"),
+    ]:
+        cand_py = os.path.join(cand, "Scripts", "python.exe") if platform.system() == "Windows" else os.path.join(cand, "bin", "python")
+        if os.path.exists(cand_py) and os.path.realpath(cand_py) != os.path.realpath(sys.executable):
+            print(f"\n[RTV] Auto-switching to dedicated virtual environment at: {cand}\n")
+            os.environ["RTV_VENV_SWITCHED"] = "1"
+            os.execv(cand_py, [cand_py] + sys.argv)
+
 
 
 # Ensure headless OpenGL & Qt in Colab / Linux environments
@@ -134,7 +154,7 @@ if RTV_DIR not in sys.path:
 
 
 
-# Check if running in system Python while a virtual environment exists
+# (Auto-switch to venv performed at startup)
 if sys.prefix == getattr(sys, "base_prefix", sys.prefix):
     for cand in [
         os.path.expanduser("~/Downloads/RTV/ROMP_repo/simple_romp/venv"),
@@ -142,8 +162,8 @@ if sys.prefix == getattr(sys, "base_prefix", sys.prefix):
         os.path.join(RTV_DIR, "../venv"),
     ]:
         if os.path.exists(os.path.join(cand, "bin", "activate")):
-            print(f"\n[RTV HINT] Detected inactive virtual environment at: {cand}")
-            print(f"[RTV HINT] For best GPU performance, run: source {cand}/bin/activate\n")
+            pass
+
             break
 
 # Auto-check and install runtime dependencies if missing (PyGLM, PyOpenGL, websockets)
