@@ -290,49 +290,49 @@ GARMENT_CATALOG = {
         "type": "upperbody",
         "id": "lab_03_vmsdp2ta",
         "category": "upper",
-        "preview": "/assets/garment_images/lab_03_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/lab_03_white_bg.jpg",
         "desc": "Fitted lab garment with collar alignment and upper-torso contour tracking."
     },
     "Lab Coat 04 (Upper-Body)": {
         "type": "upperbody",
         "id": "lab_04_vmsdp2ta",
         "category": "upper",
-        "preview": "/assets/garment_images/lab_04_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/lab_04_white_bg.jpg",
         "desc": "Alternative cut lab garment with arm occlusion preservation."
     },
     "Lab Coat 07 (Upper-Body)": {
         "type": "upperbody",
         "id": "lab_07_vmsdp2ta",
         "category": "upper",
-        "preview": "/assets/garment_images/lab_07_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/lab_07_white_bg.jpg",
         "desc": "Classic tailored lab coat model."
     },
     "Jin Apparel 17 (Upper-Body)": {
         "type": "upperbody",
         "id": "jin_17_vmsdp2ta",
         "category": "upper",
-        "preview": "/assets/garment_images/jin_17_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/jin_17_white_bg.jpg",
         "desc": "Casual apparel top with high-fidelity texture and neckline fitting."
     },
     "Jin Apparel 18 (Upper-Body)": {
         "type": "upperbody",
         "id": "jin_18_vmsdp2ta",
         "category": "upper",
-        "preview": "/assets/garment_images/jin_18_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/jin_18_white_bg.jpg",
         "desc": "Sportswear cut top with torso deformation tracking."
     },
     "Jin Apparel 22 (Upper-Body)": {
         "type": "upperbody",
         "id": "jin_22_vmsdp2ta",
         "category": "upper",
-        "preview": "/assets/garment_images/jin_22_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/jin_22_white_bg.jpg",
         "desc": "Dark tone structured apparel with high contrast contour segmentation."
     },
     "RCB Jersey 18 (Upper-Body)": {
         "type": "upperbody",
         "id": "rcb_jersey_18",
         "category": "upper",
-        "preview": "/assets/garment_images/rcb_jersey_18_preview.jpg",
+        "preview": "/rtv_assets/garment_images/rcb_jersey_18_preview.jpg",
         "desc": "Royal Challengers athletic match jersey with dynamic number rendering."
     },
 
@@ -341,35 +341,35 @@ GARMENT_CATALOG = {
         "type": "neural_stream",
         "id": "leather_jacket",
         "category": "neural",
-        "preview": "/assets/garment_images/lab_03_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/lab_03_white_bg.jpg",
         "desc": "Photorealistic biker jacket with secondary drape inertia and learned occlusion."
     },
     "✨ 3D Neural Athletic Hoodie (PBNF)": {
         "type": "neural_stream",
         "id": "hoodie",
         "category": "neural",
-        "preview": "/assets/garment_images/lab_04_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/lab_04_white_bg.jpg",
         "desc": "Athletic fleece hoodie with high-speed arm tracking and zero hand popping."
     },
     "✨ 3D Neural Formal Suit (PBNF)": {
         "type": "neural_stream",
         "id": "tailored_suit",
         "category": "neural",
-        "preview": "/assets/garment_images/lab_07_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/lab_07_white_bg.jpg",
         "desc": "Classic executive business blazer with structured lapels and depth shading."
     },
     "✨ 3D Neural Puffer Coat (PBNF)": {
         "type": "neural_stream",
         "id": "puffer_coat",
         "category": "neural",
-        "preview": "/assets/garment_images/coat_seq_preview.jpg",
+        "preview": "/rtv_assets/garment_images/coat_seq_preview.jpg",
         "desc": "Next-Gen 3D Physics-Informed Neural Garment Field with real-time dynamic wrinkles."
     },
     "✨ 3D Neural Silk Dress (PBNF)": {
         "type": "neural_stream",
         "id": "silk_dress",
         "category": "neural",
-        "preview": "/assets/garment_images/han_seq_preview.jpg",
+        "preview": "/rtv_assets/garment_images/han_seq_preview.jpg",
         "desc": "Flowing silk evening gown with continuous full-body drape."
     },
 
@@ -378,28 +378,28 @@ GARMENT_CATALOG = {
         "type": "fullbody",
         "id": "coat_seq_vmssdp2ta_576",
         "category": "full",
-        "preview": "/assets/garment_images/coat_seq_preview.jpg",
+        "preview": "/rtv_assets/garment_images/coat_seq_preview.jpg",
         "desc": "Full-body winter puffer jacket with realistic cloth physics & fold rendering."
     },
     "Hanfu Silk Dress (Full-Body)": {
         "type": "fullbody",
         "id": "han_seq_vmssdp2ta_576",
         "category": "full",
-        "preview": "/assets/garment_images/han_seq_preview.jpg",
+        "preview": "/rtv_assets/garment_images/han_seq_preview.jpg",
         "desc": "Traditional flowing silk Hanfu dress with dynamic drape and drape deformation."
     },
     "Custom Designer Dress (Full-Body)": {
         "type": "fullbody",
         "id": "custom_designer_dress",
         "category": "full",
-        "preview": "/assets/garment_images/custom_designer_dress_preview.jpg",
+        "preview": "/rtv_assets/garment_images/custom_designer_dress_preview.jpg",
         "desc": "Custom trained luxury evening designer gown."
     },
     "My Custom Dress (Full-Body)": {
         "type": "fullbody",
         "id": "my_custom_dress",
         "category": "full",
-        "preview": "/assets/garment_images/my_custom_dress_preview.jpg",
+        "preview": "/rtv_assets/garment_images/my_custom_dress_preview.jpg",
         "desc": "Custom user-trained dress model."
     },
 
@@ -408,7 +408,7 @@ GARMENT_CATALOG = {
         "type": "none",
         "id": "none",
         "category": "calibration",
-        "preview": "/assets/none.png",
+        "preview": "/rtv_assets/none.png",
         "desc": "Raw camera stream with 3D SMPL pose detection and anatomical skeleton overlay."
     }
 }
@@ -423,15 +423,15 @@ def scan_and_update_catalog():
             model_dir = os.path.join(ckpts_dir, item)
             model_file = os.path.join(model_dir, "latest_net_G.pth")
             if os.path.isdir(model_dir) and os.path.exists(model_file):
-                thumb = "/assets/none.png"
+                thumb = "/rtv_assets/none.png"
                 if os.path.exists(os.path.join(model_dir, "preview.jpg")):
                     thumb = f"/rtv_ckpts/{item}/preview.jpg"
                 elif os.path.exists(os.path.abspath(f"./assets/garment_images/{item}_preview.jpg")):
-                    thumb = f"/assets/garment_images/{item}_preview.jpg"
+                    thumb = f"/rtv_assets/garment_images/{item}_preview.jpg"
                 elif os.path.exists(os.path.abspath(f"./assets/garment_images/{item}.jpg")):
-                    thumb = f"/assets/garment_images/{item}.jpg"
+                    thumb = f"/rtv_assets/garment_images/{item}.jpg"
                 elif os.path.exists(os.path.abspath(f"./assets/garment_images/{item}_white_bg.jpg")):
-                    thumb = f"/assets/garment_images/{item}_white_bg.jpg"
+                    thumb = f"/rtv_assets/garment_images/{item}_white_bg.jpg"
 
                 already_in = False
                 for k, v in GARMENT_CATALOG.items():
@@ -1753,7 +1753,7 @@ def build_gradio_ui(engine: ColabTryOnEngine):
                 wardrobe_cards_html = []
                 for idx, (label, item) in enumerate(GARMENT_CATALOG.items()):
                     cat = item.get("category", "upper")
-                    preview = item.get("preview") or "/assets/none.png"
+                    preview = item.get("preview") or "/rtv_assets/none.png"
                     desc = item.get("desc", "")
                     is_active = (label == engine.active_garment_label)
                     active_border = "#00ffaa" if is_active else "#1f293d"
@@ -1775,7 +1775,7 @@ def build_gradio_ui(engine: ColabTryOnEngine):
                     card_html = f"""
                     <div class="rtv-wardrobe-card" data-category="{cat}" data-label="{label}" onclick="window.rtvSelectGarment('{escaped_label}')" style="cursor:pointer; background:#111827; border:2px solid {active_border}; {active_glow} border-radius:10px; overflow:hidden; transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display:flex; flex-direction:column; position:relative;">
                         <div style="position:relative; width:100%; aspect-ratio:1/1; background:#030712; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                            <img src="{preview}" alt="{label}" loading="lazy" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null;this.src='/assets/none.png';" />
+                            <img src="{preview}" alt="{label}" loading="lazy" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null;this.src='/rtv_assets/none.png';" />
                             <span style="position:absolute; top:6px; left:6px; background:rgba(15,23,42,0.85); color:{badge_col}; border:1px solid {badge_col}44; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:12px; backdrop-filter:blur(4px);">{badge_txt}</span>
                         </div>
                         <div style="padding:10px; display:flex; flex-direction:column; justify-content:space-between; flex-grow:1; background:linear-gradient(180deg, #111827 0%, #0b0f19 100%);">
@@ -2970,7 +2970,7 @@ def main():
     # Mount static directories for instant thumbnail and asset streaming
     from starlette.staticfiles import StaticFiles
     if os.path.exists("./assets"):
-        fastapi_app.mount("/assets", StaticFiles(directory="./assets"), name="assets")
+        fastapi_app.mount("/rtv_assets", StaticFiles(directory="./assets"), name="rtv_assets")
     if os.path.exists("./rtv_ckpts"):
         fastapi_app.mount("/rtv_ckpts", StaticFiles(directory="./rtv_ckpts"), name="rtv_ckpts")
 
