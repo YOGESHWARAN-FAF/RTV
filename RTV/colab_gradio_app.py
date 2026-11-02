@@ -26,6 +26,9 @@ Provides a complete, browser-based interface for Google Colab, Cloud GPUs, and l
 
 import os
 
+# Enable expandable segments to eliminate PyTorch CUDA memory fragmentation
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 import sys
 
 import asyncio
@@ -137,6 +140,12 @@ if torch.cuda.is_available():
         except Exception as _ce:
             print(f"[RTV] cuDNN descriptor test failed ({_ce}). Disabling cuDNN, switching to native PyTorch CUDA acceleration.")
             torch.backends.cudnn.enabled = False
+
+    try:
+        from util.device_config import init_rtv_devices
+        init_rtv_devices()
+    except Exception as _dev_e:
+        print(f"[RTV] Device config notice: {_dev_e}")
 
 
 
@@ -707,6 +716,10 @@ class ColabTryOnEngine:
                     print("[RTV-Colab] Auto-disabling cuDNN to prevent stream drops. Native CUDA mode active.\n")
                     torch.backends.cudnn.enabled = False
                     torch.backends.cudnn.benchmark = False
+                    torch.cuda.empty_cache()
+                elif "out of memory" in err_msg.lower() or "cuda oom" in err_msg.lower():
+                    print(f"\n[RTV-Colab] CUDA OOM warning: {err_msg}")
+                    print("[RTV-Colab] Purging PyTorch CUDA cache to recover VRAM...\n")
                     torch.cuda.empty_cache()
                 else:
                     print(f"[RTV-Colab] Background ML inference error: {e}")
@@ -3025,8 +3038,15 @@ def main():
 
     parser.add_argument("--no_share", action="store_true", help="Disable public link sharing")
     parser.add_argument("--no_cudnn", action="store_true", default=False, help="Disable cuDNN and use native PyTorch CUDA kernels")
+    parser.add_argument("--gpu", type=int, default=0, help="Primary CUDA GPU index (default: 0)")
+    parser.add_argument("--dual_gpu", action="store_true", default=False, help="Enable multi-GPU split (requires secondary GPU >= 8GB VRAM)")
 
     args = parser.parse_args()
+
+    if args.gpu != 0:
+        os.environ["RTV_GPU"] = str(args.gpu)
+    if args.dual_gpu:
+        os.environ["RTV_DUAL_GPU"] = "1" 
 
     if args.no_cudnn or os.environ.get("RTV_NO_CUDNN") == "1":
         print("[RTV] cuDNN disabled via flag/env. Running on native PyTorch CUDA acceleration.")

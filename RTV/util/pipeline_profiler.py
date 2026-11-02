@@ -198,10 +198,15 @@ class PipelineProfiler:
             line0 = dual_gpu_status
         elif torch.cuda.is_available():
             cnt = torch.cuda.device_count()
-            if cnt >= 2:
-                line0 = f"GPU.0 [{torch.cuda.get_device_name(0)}]: ACTIVE | GPU.1 [{torch.cuda.get_device_name(1)}]: AMP FP16"
+            gpu0_name = torch.cuda.get_device_name(0)
+            gpu0_prop = torch.cuda.get_device_properties(0)
+            gpu0_gb = gpu0_prop.total_memory / (1024 ** 3)
+            is_dual = os.environ.get("RTV_DUAL_GPU", "0").lower() in ("1", "true") and cnt >= 2
+            if is_dual:
+                gpu1_name = torch.cuda.get_device_name(1)
+                line0 = f"GPU.0 [{gpu0_name}]: ACTIVE | GPU.1 [{gpu1_name}]: ACTIVE"
             else:
-                line0 = f"GPU.0 [{torch.cuda.get_device_name(0)}]: ACTIVE (16GB VRAM) [AMP FP16]"
+                line0 = f"GPU.0 [{gpu0_name}]: ACTIVE ({gpu0_gb:.1f}GB VRAM)"
         else:
             line0 = "CPU Mode: ACTIVE"
         line1 = (

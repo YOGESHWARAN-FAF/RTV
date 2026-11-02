@@ -21,9 +21,14 @@ from util.sequential_tracker import SequentialTryOnTracker
 # Enable cuDNN benchmark for faster inference
 torch.backends.cudnn.benchmark = True
 
-DEV_COUNT = torch.cuda.device_count()
-DEVICE_POSE = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
-DEVICE_GEN = torch.device('cuda:1' if DEV_COUNT >= 2 else ('cuda:0' if DEV_COUNT > 0 else 'cpu'))
+try:
+    from util.device_config import get_pose_device, get_gen_device
+    DEVICE_POSE = get_pose_device()
+    DEVICE_GEN = get_gen_device()
+except Exception:
+    DEV_COUNT = torch.cuda.device_count()
+    DEVICE_POSE = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
+    DEVICE_GEN = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
 
 def make_pix2pix_model(name, input_nc=6, output_nc=4, model_name='pix2pixHD_RNN_RGBA'):
     opt = TestOptions().parse(save=False, use_default=True, show_info=False)

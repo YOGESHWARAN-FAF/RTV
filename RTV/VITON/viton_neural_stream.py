@@ -35,9 +35,14 @@ from model.reference_synthesis.reference_encoder import ReferenceGarmentEncoder
 from model.reference_synthesis.spatial_temporal_generator import SpatialTemporalCrossAttentionGenerator
 from composition.neural_occlusion import neural_smooth_overlay
 
-DEV_COUNT = torch.cuda.device_count()
-DEVICE_POSE = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
-DEVICE_GEN = torch.device('cuda:1' if DEV_COUNT >= 2 else ('cuda:0' if DEV_COUNT > 0 else 'cpu'))
+try:
+    from util.device_config import get_pose_device, get_gen_device
+    DEVICE_POSE = get_pose_device()
+    DEVICE_GEN = get_gen_device()
+except Exception:
+    DEV_COUNT = torch.cuda.device_count()
+    DEVICE_POSE = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
+    DEVICE_GEN = torch.device('cuda:0' if DEV_COUNT > 0 else 'cpu')
 
 
 class NeuralVirtualTryOnStreamProcessor:

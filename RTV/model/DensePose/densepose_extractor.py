@@ -83,13 +83,15 @@ class DensePoseExtractor(DumpAction):
         self.cfg = os.path.join(_dp_dir, 'configs', 'densepose_rcnn_R_50_FPN_s1x.yaml')
         self.model = 'https://dl.fbaipublicfiles.com/densepose/densepose_rcnn_R_50_FPN_s1x/165712039/model_final_162be9.pkl'
         cfg = self.dp_model.setup_config(self.cfg, self.model, self.args, opts)
-        if torch.cuda.device_count() >= 2:
-            cfg.defrost()
-            cfg.MODEL.DEVICE = 'cuda:1'
-            cfg.freeze()
-            self.device_str = 'cuda:1'
-        else:
-            self.device_str = 'cuda' if torch.cuda.is_available() else 'cpu'
+        try:
+            from util.device_config import get_densepose_device_str
+            dp_device = get_densepose_device_str()
+        except Exception:
+            dp_device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        cfg.defrost()
+        cfg.MODEL.DEVICE = dp_device
+        cfg.freeze()
+        self.device_str = dp_device
         self.predictor = DefaultPredictor(cfg)
         self.palette = np.array(get_palette(25), np.uint8).reshape(-1,3)
 
