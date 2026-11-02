@@ -99,7 +99,19 @@ if RTV_DIR not in sys.path:
 
 
 
-# Auto-check and install runtime dependencies if missing (PyGLM, websockets)
+# Check if running in system Python while a virtual environment exists
+if sys.prefix == getattr(sys, "base_prefix", sys.prefix):
+    for cand in [
+        os.path.expanduser("~/Downloads/RTV/ROMP_repo/simple_romp/venv"),
+        os.path.join(RTV_DIR, "../ROMP_repo/simple_romp/venv"),
+        os.path.join(RTV_DIR, "../venv"),
+    ]:
+        if os.path.exists(os.path.join(cand, "bin", "activate")):
+            print(f"\n[RTV HINT] Detected inactive virtual environment at: {cand}")
+            print(f"[RTV HINT] For best GPU performance, run: source {cand}/bin/activate\n")
+            break
+
+# Auto-check and install runtime dependencies if missing (PyGLM, PyOpenGL, websockets)
 try:
     import glm
 except ImportError:
@@ -110,6 +122,17 @@ except ImportError:
         print("[RTV] 'PyGLM' installed successfully!")
     except Exception as e:
         print(f"[RTV] Warning: could not auto-install PyGLM: {e}")
+
+try:
+    import OpenGL
+except ImportError:
+    print("[RTV] Missing 'OpenGL' module. Installing 'PyOpenGL'...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "PyOpenGL"])
+        import OpenGL
+        print("[RTV] 'PyOpenGL' installed successfully!")
+    except Exception as e:
+        print(f"[RTV] Warning: could not auto-install PyOpenGL: {e}")
 
 try:
     import websockets
