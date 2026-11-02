@@ -234,7 +234,7 @@ class FrameProcessor:
             raw_alpha_tensor = target_tensor[0, 3, :, :].float()
             solid_alpha = torch.clamp((raw_alpha_tensor - 0.15) / 0.40, 0.0, 1.0)
             roi_alpha = (solid_alpha.cpu().numpy() * 255).astype(np.uint8)
-            roi_alpha[(body_envelope == 0) & (roi_alpha < 130)] = 0
+            roi_alpha[body_envelope == 0] = 0
 
             # Close pinholes and internal gaps to ensure 100% solid fabric
             k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
@@ -246,7 +246,7 @@ class FrameProcessor:
                 for i, h in enumerate(hierarchy[0]):
                     if h[3] != -1:
                         area = cv2.contourArea(contours[i])
-                        if area < 2500:
+                        if area < 150:
                             cv2.drawContours(roi_alpha, contours, i, 255, -1)
 
             num_labels, labels, stats, _ = cv2.connectedComponentsWithStats((roi_alpha > 40).astype(np.uint8))
@@ -258,6 +258,9 @@ class FrameProcessor:
             roi_alpha[-4:, :] = 0
             roi_alpha[:, :4] = 0
             roi_alpha[:, -4:] = 0
+            # Strictly enforce Zero Black Pixel Rule: alpha cannot exist on dark background pixels
+            is_fabric = (roi_target[:, :, 0] > 12) | (roi_target[:, :, 1] > 12) | (roi_target[:, :, 2] > 12)
+            roi_alpha[~is_fabric] = 0
             roi_alpha = cv2.GaussianBlur(roi_alpha, (3, 3), 0)
 
             if scale != 1.0:
@@ -398,7 +401,7 @@ class FrameProcessor:
         raw_alpha_tensor = target_tensor[0, 3, :, :].float()
         solid_alpha = torch.clamp((raw_alpha_tensor - 0.15) / 0.40, 0.0, 1.0)
         roi_alpha = (solid_alpha.cpu().numpy() * 255).astype(np.uint8)
-        roi_alpha[(body_envelope == 0) & (roi_alpha < 130)] = 0
+        roi_alpha[body_envelope == 0] = 0
 
         # Close pinholes and internal gaps to ensure 100% solid fabric
         k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
@@ -411,7 +414,7 @@ class FrameProcessor:
             for i, h in enumerate(hierarchy[0]):
                 if h[3] != -1:  # Internal hole surrounded by garment
                     area = cv2.contourArea(contours[i])
-                    if area < 2500:
+                    if area < 150:
                         cv2.drawContours(roi_alpha, contours, i, 255, -1)
 
         # Morphological connected component speckle removal (< 150 area) to kill background noise
@@ -425,6 +428,9 @@ class FrameProcessor:
         roi_alpha[-4:, :] = 0
         roi_alpha[:, :4] = 0
         roi_alpha[:, -4:] = 0
+        # Strictly enforce Zero Black Pixel Rule: alpha cannot exist on dark background pixels
+        is_fabric = (roi_target[:, :, 0] > 12) | (roi_target[:, :, 1] > 12) | (roi_target[:, :, 2] > 12)
+        roi_alpha[~is_fabric] = 0
         roi_alpha = cv2.GaussianBlur(roi_alpha, (3, 3), 0)
 
         # 7. Compute inverse transform from 512x512 ROI back to full-resolution raw_image

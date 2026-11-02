@@ -17,8 +17,12 @@ Features:
 import math
 import numpy as np
 import cv2
-import torch
-import torch.nn.functional as F
+try:
+    import torch
+    import torch.nn.functional as F
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
 
 # Precomputed 256-byte cubic Hermite smoothstep Look-Up Table
 _HERMITE_LUT = np.array([
@@ -33,8 +37,8 @@ class NeuralForegroundOcclusionEngine:
     Processes full HD frames in < 3 ms.
     """
     def __init__(self, use_cuda=True):
-        self.use_cuda = use_cuda and torch.cuda.is_available()
-        self.device = torch.device('cuda:0' if self.use_cuda else 'cpu')
+        self.use_cuda = use_cuda and HAS_TORCH and torch.cuda.is_available()
+        self.device = torch.device('cuda:0' if self.use_cuda else 'cpu') if HAS_TORCH else None
 
     def estimate_foreground_occlusion(self, frame_bgr, wrist_l=None, wrist_r=None, chin_pt=None, neck_pt=None):
         """
@@ -166,10 +170,14 @@ class NeuralForegroundOcclusionEngine:
             for ci, ch in enumerate(hier[0]):
                 if ch[3] != -1:  # Internal hole
                     area = cv2.contourArea(cnts[ci])
-                    if area < 4000:
+                    if area < 150:
                         cv2.drawContours(sub_alpha, cnts, ci, 255, -1)
 
         # 3. Dynamic Ambient Color & Tone Harmonization
+        # Enforce Zero Black Pixel Rule: background (0,0,0) cannot be blended onto scene
+        is_fabric = (sub_target[:, :, 0] > 10) | (sub_target[:, :, 1] > 10) | (sub_target[:, :, 2] > 10)
+        sub_alpha[~is_fabric] = 0
+
         if ambient_match:
             sub_target = self.harmonize_ambient_lighting(sub_target, view, sub_alpha)
 

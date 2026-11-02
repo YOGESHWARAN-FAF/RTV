@@ -66,10 +66,14 @@ def smooth_overlay_alpha(
             for ci, ch in enumerate(hier[0]):
                 if ch[3] != -1:
                     area = cv2.contourArea(cnts[ci])
-                    if area < 4000:
+                    if area < 150:
                         cv2.drawContours(sub_alpha, cnts, ci, 255, -1)
 
     # 3. Dynamic Ambient Tone & Luminance Harmonization
+    # Enforce Zero Black Pixel Rule: background (0,0,0) cannot be blended onto scene
+    is_fabric = (sub_target[:, :, 0] > 10) | (sub_target[:, :, 1] > 10) | (sub_target[:, :, 2] > 10)
+    sub_alpha[~is_fabric] = 0
+
     if ambient_match:
         mask_sub = sub_alpha[::4, ::4] > 120
         if np.any(mask_sub):

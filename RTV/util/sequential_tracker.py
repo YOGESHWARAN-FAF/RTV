@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import cv2
-
+from util.cv2_trans_util import decompose_affine, compose_affine
 class SequentialTryOnTracker:
     """
     Sub-Millisecond Sequential Frame-to-Frame Affine Motion Tracking Engine.
@@ -72,16 +72,17 @@ class SequentialTryOnTracker:
                 pass
         
         # If transitioning from an active running tracker, compute offset for smooth blending
-        if self.active_anchor_inv is not None and self.tracker_pts is not None and len(self.tracker_pts) >= 4:
-            # Measure true anatomical delta at tracked chest center
+        if self.active_anchor_inv is not None:
             prev_chest_frame = self.active_anchor_inv @ np.array([self.roi_width * 0.5, self.roi_height * 0.35, 1.0])
             curr_chest = self.accum_M @ np.array([prev_chest_frame[0], prev_chest_frame[1], 1.0])
             new_chest = new_inv @ np.array([self.roi_width * 0.5, self.roi_height * 0.35, 1.0])
             delta = curr_chest[:2] - new_chest[:2]
-            dist = np.hypot(delta[0], delta[1])
-            if dist < 60.0:
-                self.transition_offset = delta.astype(np.float32)
-                self.transition_step = self.transition_steps_total
+            dist = float(np.hypot(delta[0], delta[1]))
+            if dist > 0.5:
+                # Clamp max initial transition delta to 40px to eliminate any sudden snap
+                scale_d = min(1.0, 40.0 / dist)
+                self.transition_offset = (delta * scale_d).astype(np.float32)
+                self.transition_step = max(6, self.transition_steps_total)
             else:
                 self.transition_offset = np.zeros(2, dtype=np.float32)
                 self.transition_step = 0
@@ -219,9 +220,12 @@ class SequentialTryOnTracker:
 
         self.prev_gray = curr_gray.copy()
 
-        # 4. Anti-Shaking Smooth EMA filter on accumulated transformation
+        # 4. Anti-Shaking Smooth EMA filter with Affine Decomposition (preserves scale/rotation)
+        p_acc = decompose_affine(self.accum_M[:2, :])
+        p_prev = decompose_affine(self.smooth_M[:2, :])
         alpha_ema = 0.65
-        self.smooth_M = alpha_ema * self.accum_M + (1.0 - alpha_ema) * self.smooth_M
+        p_smooth = p_acc * alpha_ema + p_prev * (1.0 - alpha_ema)
+        self.smooth_M = np.vstack([compose_affine(p_smooth), [0, 0, 1]])
 
         # 5. Decay transition offset from previous anchor
         if self.transition_step > 0:

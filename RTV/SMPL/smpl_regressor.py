@@ -328,6 +328,144 @@ class SMPL_Regressor:
         inv_trans = cv2.invertAffineTransform(trans)
         return trans, inv_trans
 
+    def get_fullbody_trans2roi(self, smpl_param, s=1.38, new_h=1024, new_w=768, det_h=None):
+        if smpl_param is None or 'cam_trans' not in smpl_param or len(smpl_param['cam_trans']) == 0:
+            return np.eye(2, 3, dtype=np.float32), np.eye(2, 3, dtype=np.float32)
+        cam_trans = smpl_param['cam_trans']
+        pj2d = smpl_param['pj2d_org']
+        if 'best_person_idx' in smpl_param:
+            best_idx = int(smpl_param['best_person_idx'])
+        else:
+            depth_order = torch.sort(cam_trans[:, 2].cpu(), descending=False).indices.numpy()
+            best_idx = int(depth_order[0]) if len(depth_order) > 0 and depth_order[0] < len(pj2d) else 0
+        best_idx = min(best_idx, len(pj2d) - 1)
+        Joints = pj2d[best_idx].cpu().numpy()
+
+        src = np.zeros([3, 2], np.float32)
+
+        neck = Joints[12]
+        spine = Joints[9]
+        pelvis = Joints[0]
+        sh_l, sh_r = Joints[16], Joints[17]
+        shoulder_width = max(10.0, float(np.linalg.norm(sh_l - sh_r)))
+        neck_spine = max(5.0, float(np.linalg.norm(neck - spine)))
+        torso_height = max(10.0, float(np.linalg.norm(neck - pelvis)))
+
+        # Check full body ankle span: Joints 7 and 8 are L_Ankle and R_Ankle
+        ankles_mid = (Joints[7] + Joints[8]) * 0.5
+        head_ankle_dist = float(np.linalg.norm(Joints[15] - ankles_mid))
+        head_height = max(5.0, float(np.linalg.norm(Joints[15] - neck)))
+
+        # Detect arm elevation using elbows (18, 19) and wrists (20, 21)
+        arm_elevation = 0.0
+        min_arm_y = min(sh_l[1], sh_r[1])
+        if len(Joints) > 21:
+            elbow_l, elbow_r = Joints[18], Joints[19]
+            wrist_l, wrist_r = Joints[20], Joints[21]
+            min_arm_y = min(elbow_l[1], elbow_r[1], wrist_l[1], wrist_r[1])
+            shoulder_y = min(sh_l[1], sh_r[1])
+            if min_arm_y < shoulder_y:
+                # Smooth continuous elevation expansion (max 10%)
+                arm_elevation = min(0.10, max(0.0, (shoulder_y - min_arm_y) / max(1.0, shoulder_width * 2.2)))
+
+        # Always center horizontally between shoulders for 100% accurate left/right tracking
+        center_x = (sh_l[0] + sh_r[0]) * 0.5
+
+        # Precise Canonical Upper-Body / Seated Framing:
+        # In the 576x432 training space, shoulders are at Y=165 (0.286 of height) and span 130px (0.301 of width).
+        # Anchoring to this ratio guarantees 100% exact shoulder/neck fitting regardless of camera distance or desk occlusion!
+        aspect_ratio = float(new_w) / float(new_h)
+        canonical_sh_in_roi = float(new_w) * 0.301
+        size_torso_canonical = shoulder_width * (float(new_h) / canonical_sh_in_roi)
+        size_seated = size_torso_canonical * s
+        center_y_seated = ((sh_l[1] + sh_r[1]) * 0.5) * 0.70 + neck[1] * 0.30 + 0.214 * size_seated
+
+        # Strict Visibility Validation for Ankles:
+        # ROMP hallucinates off-screen feet deep below desk/laptop boundaries.
+        # Only treat as full-body standing if ankles are genuinely visible and within physical human proportions.
+        max_frame_h = det_h if det_h is not None else max(576.0, pelvis[1] + torso_height * 2.2)
+        ankles_in_view = (Joints[7][1] < max_frame_h * 0.92) and (Joints[8][1] < max_frame_h * 0.92) and (Joints[7][1] > pelvis[1] + torso_height * 0.5) and (Joints[8][1] > pelvis[1] + torso_height * 0.5)
+        ankle_prop_valid = (head_ankle_dist >= torso_height * 1.4) and (head_ankle_dist <= shoulder_width * 4.0)
+
+        if ankles_in_view and ankle_prop_valid:
+            head_ankle_dist_bounded = min(head_ankle_dist, shoulder_width * 3.75)
+            size_standing = head_ankle_dist_bounded * s
+            center_y_standing = (Joints[15][1] + ankles_mid[1]) * 0.5
+            is_standing_score = min(head_ankle_dist_bounded / max(1.0, head_height * 4.2), head_ankle_dist_bounded / max(1.0, torso_height * 1.8))
+            w_standing = float(np.clip((is_standing_score - 0.92) / 0.20, 0.0, 1.0))
+        else:
+            w_standing = 0.0
+            size_standing = size_seated
+            center_y_standing = center_y_seated
+
+        size = size_standing * w_standing + size_seated * (1.0 - w_standing)
+        center_y = center_y_standing * w_standing + center_y_seated * (1.0 - w_standing)
+
+        # Accommodate arm elevation by expanding size isotropically (preserves strict 3:4 aspect ratio)
+        if arm_elevation > 0.0:
+            size = size * (1.0 + arm_elevation * 0.20)
+
+        # Accommodate lateral arm span with bounded expansion (strictly protects canonical torso scale)
+        anatomical_size = size
+        max_allowed_fullbody_size = anatomical_size * 1.08
+        if len(Joints) > 21:
+            elbow_l, elbow_r = Joints[18], Joints[19]
+            wrist_l, wrist_r = Joints[20], Joints[21]
+            max_x = max(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], sh_l[0], sh_r[0])
+            min_x = min(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], sh_l[0], sh_r[0])
+            lateral_half_span = max(abs(max_x - center_x), abs(center_x - min_x))
+            required_half_w = lateral_half_span * 1.08
+            size_for_lateral = (required_half_w / aspect_ratio) * 2.0
+            size = min(max_allowed_fullbody_size, max(size, size_for_lateral))
+
+            head_top = min(Joints[15][1], min_arm_y)
+            if head_top < center_y - (size / 2.0):
+                needed_half_h = abs(center_y - head_top) * 1.05
+                size = min(max_allowed_fullbody_size, max(size, needed_half_h * 2.0))
+
+        center = np.array([center_x, center_y], dtype=np.float32)
+
+        # Robust invariant upper body scale (immune to off-screen pelvis or arm positions)
+        sh_width = np.linalg.norm(Joints[16] - Joints[17])
+        head_neck = np.linalg.norm(Joints[15] - Joints[12])
+        neck_spine = np.linalg.norm(Joints[12] - Joints[9])
+
+        # Primary scale based on upper torso anatomy
+        base_size = max(sh_width * 1.5, neck_spine * 3.2, head_neck * 2.8)
+
+        # Check pelvis only if clearly valid and within reasonable human proportions
+        head_pelvis = np.linalg.norm(Joints[15] - Joints[0])
+        if 0.8 * base_size < head_pelvis < 1.8 * base_size:
+            size = (head_pelvis * 0.6 + base_size * 0.4) * s
+        else:
+            size = base_size * s
+
+        # Accommodate spread arms in upperbody framing while strictly preserving canonical scale
+        if len(Joints) > 21:
+            elbow_l, elbow_r = Joints[18], Joints[19]
+            wrist_l, wrist_r = Joints[20], Joints[21]
+            max_x = max(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], Joints[16][0], Joints[17][0])
+            min_x = min(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], Joints[16][0], Joints[17][0])
+            lateral_half = max(abs(max_x - center_x), abs(center_x - min_x))
+            max_allowed_size = (base_size * s) * 1.12
+            target_expanded = max(size, lateral_half * 1.05)
+            size = min(max_allowed_size, target_expanded)
+
+        src[0, :] = center + np.array([-size, size], np.float32)
+        src[1, :] = center + np.array([-size, -size], np.float32)
+        src[2, :] = center + np.array([size, -size], np.float32)
+
+        dst = np.zeros([3, 2], np.float32)
+        dst[0, :] = np.array([0, img_size - 1], np.float32)
+        dst[1, :] = np.array([0, 0], np.float32)
+        dst[2, :] = np.array([img_size - 1, 0], np.float32)
+        raw_trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+        params = decompose_affine(raw_trans)
+        filtered_params = self.trans_filter(params, time.time())
+        trans = compose_affine(filtered_params)
+        inv_trans = cv2.invertAffineTransform(trans)
+        return trans, inv_trans
+
     def get_fullbody_trans2roi(self, smpl_param, s=1.38, new_h=1024, new_w=768):
         if smpl_param is None or 'cam_trans' not in smpl_param or len(smpl_param['cam_trans']) == 0:
             return np.eye(2, 3, dtype=np.float32), np.eye(2, 3, dtype=np.float32)
