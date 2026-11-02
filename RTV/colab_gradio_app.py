@@ -745,7 +745,7 @@ class ColabTryOnEngine:
         self.frame_seq += 1
 
         orig_h, orig_w = frame_bgr.shape[:2]
-        target_w = 640
+        target_w = 480
         if orig_w > target_w:
             scale = target_w / float(orig_w)
             target_h = int(orig_h * scale)
@@ -1430,7 +1430,7 @@ RTV_LIVE_MIRROR_JS = r'''
         try {
             const vw = video.videoWidth || 640;
             const vh = video.videoHeight || 480;
-            const targetW = 480;
+            const targetW = 400;
             let targetH = Math.round(targetW * (vh / vw));
             if (targetH % 2 !== 0) targetH -= 1;
 
@@ -1440,7 +1440,7 @@ RTV_LIVE_MIRROR_JS = r'''
             }
 
             rtvCtx.drawImage(video, 0, 0, targetW, targetH);
-            const blob = await new Promise(res => rtvCanvas.toBlob(res, 'image/jpeg', 0.72));
+            const blob = await new Promise(res => rtvCanvas.toBlob(res, 'image/jpeg', 0.60));
             if (!blob || !rtvRunning) return;
 
             const garmentEl = document.getElementById('rtv_ws_garment');
@@ -3072,10 +3072,12 @@ def launch_cloud_tunnel(port=7860):
                 time.sleep(0.8)
 
         try:
+            null_cfg = "NUL" if platform.system() == "Windows" else "/dev/null"
             cmd = [
                 cf_bin, "tunnel",
+                "--config", null_cfg,
                 "--url", f"http://127.0.0.1:{port}",
-                "--http-host-header", f"localhost:{port}"
+                "--no-autoupdate"
             ]
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for line in proc.stdout:
