@@ -97,3 +97,4 @@ def get_densepose_device_str():
     if not _INITIALIZED:
         init_rtv_devices()
     return _DEVICE_DP_STR
+

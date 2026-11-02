@@ -205,9 +205,10 @@ class NeuralVirtualTryOnStreamProcessor:
 
         # Multi-task concurrent 3D pose & dense surface extraction
         import concurrent.futures
+        tracked_center = getattr(self.smpl_regressor, 'tracked_subject_center', None)
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             fut_smpl = executor.submit(self.smpl_regressor.forward, det_img, False)
-            fut_dp = executor.submit(self.densepose_extractor.get_IUV, det_img, False)
+            fut_dp = executor.submit(self.densepose_extractor.get_IUV, det_img, False, tracked_center)
             smpl_param = fut_smpl.result()
             IUV = fut_dp.result()
 
@@ -267,18 +268,18 @@ class NeuralVirtualTryOnStreamProcessor:
         roi_alpha = cv2.morphologyEx(roi_alpha, cv2.MORPH_CLOSE, k_close)
 
         # Key Landmarks for Occlusion
-        pj2d = smpl_param.get('pj2d', None)
+        pj2d = smpl_param.get('pj2d_org', smpl_param.get('pj2d', None))
         if pj2d is not None and len(pj2d) > best_person_idx:
             joints = pj2d[best_person_idx].cpu().numpy() if isinstance(pj2d[best_person_idx], torch.Tensor) else pj2d[best_person_idx]
-            wrist_l = joints[20][:2] / scale if len(joints) > 20 else np.array([raw_w * 0.25, raw_h * 0.55])
-            wrist_r = joints[21][:2] / scale if len(joints) > 21 else np.array([raw_w * 0.75, raw_h * 0.55])
-            chin_pt = joints[12][:2] / scale if len(joints) > 12 else np.array([raw_w * 0.50, raw_h * 0.18])
-            neck_pt = joints[1][:2] / scale if len(joints) > 1 else np.array([raw_w * 0.50, raw_h * 0.24])
+            wrist_l = joints[20][:2] / scale if len(joints) > 20 else None
+            wrist_r = joints[21][:2] / scale if len(joints) > 21 else None
+            chin_pt = joints[15][:2] / scale if len(joints) > 15 else None
+            neck_pt = joints[12][:2] / scale if len(joints) > 12 else None
         else:
-            wrist_l = np.array([raw_w * 0.25, raw_h * 0.55])
-            wrist_r = np.array([raw_w * 0.75, raw_h * 0.55])
-            chin_pt = np.array([raw_w * 0.50, raw_h * 0.18])
-            neck_pt = np.array([raw_w * 0.50, raw_h * 0.24])
+            wrist_l = None
+            wrist_r = None
+            chin_pt = None
+            neck_pt = None
 
         # Tracking feature points around chest
         chest_mask = np.zeros_like(curr_gray)

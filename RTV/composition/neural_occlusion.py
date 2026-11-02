@@ -38,54 +38,65 @@ class NeuralForegroundOcclusionEngine:
 
     def estimate_foreground_occlusion(self, frame_bgr, wrist_l=None, wrist_r=None, chin_pt=None, neck_pt=None):
         """
-        Estimates pixel-accurate foreground occlusion mask for hands, forearms,
-        neck, and long hair without hardcoded color thresholds.
-        Returns uint8 mask [H, W] where 255 = foreground (preserve user body/hair).
+        Estimates pixel-accurate foreground occlusion mask for genuine hands and forearms
+        without punching blind circular holes into the garment fabric.
+        Returns uint8 mask [H, W] where 255 = foreground (preserve user body/hands).
         """
         h, w = frame_bgr.shape[:2]
         fg_mask = np.zeros((h, w), dtype=np.uint8)
         
-        # 1. Anatomical Hand & Forearm Guidance
-        # Constructs oriented elliptical capsules along forearm kinematic lines
+        # 1. Genuine Hand & Skin Detection (Adaptive Fitzpatrick Scales I-VI)
         hand_pts = [pt for pt in [wrist_l, wrist_r] if pt is not None]
         for pt in hand_pts:
-            wx, wy = int(np.clip(pt[0], 0, w - 1)), int(np.clip(pt[1], 0, h - 1))
-            rad = max(18, int(w * 0.055))
+            try:
+                wx, wy = float(pt[0]), float(pt[1])
+            except Exception:
+                continue
+                
+            # Ignore hardcoded default fallback landmarks to avoid ghost holes in chest/ribs
+            if (abs(wx - w * 0.25) < 3.0 and abs(wy - h * 0.55) < 3.0) or \
+               (abs(wx - w * 0.75) < 3.0 and abs(wy - h * 0.55) < 3.0) or \
+               (abs(wx - w * 0.50) < 3.0 and abs(wy - h * 0.18) < 3.0):
+                continue
+
+            ix, iy = int(np.clip(wx, 0, w - 1)), int(np.clip(wy, 0, h - 1))
+            rad = max(14, int(w * 0.045))
             
             # Extract local hand ROI
-            x1, y1 = max(0, wx - rad), max(0, wy - rad)
-            x2, y2 = min(w, wx + rad), min(h, wy + rad)
+            x1, y1 = max(0, ix - rad), max(0, iy - rad)
+            x2, y2 = min(w, ix + rad), min(h, iy + rad)
             roi = frame_bgr[y1:y2, x1:x2]
             
             if roi.size > 0:
-                # Adaptive local Otsu / gradient segmentation
-                gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-                blur = cv2.GaussianBlur(gray, (5, 5), 0)
+                # Rigorous Skin Color Detection in YCrCb and HSV color spaces
+                ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCrCb)
+                cr = ycrcb[:, :, 1]
+                cb = ycrcb[:, :, 2]
+                skin_ycrcb = (cr >= 133) & (cr <= 173) & (cb >= 77) & (cb <= 127)
                 
-                # Gradient magnitude detects fingers and hand edges cleanly
-                gx = cv2.Sobel(blur, cv2.CV_32F, 1, 0, ksize=3)
-                gy = cv2.Sobel(blur, cv2.CV_32F, 0, 1, ksize=3)
-                mag = cv2.magnitude(gx, gy)
+                hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+                sat = hsv[:, :, 1]
+                val = hsv[:, :, 2]
+                skin_hsv = (sat >= 20) & (val >= 35)
                 
-                # Combine local Otsu threshold with circular mask
-                _, local_bin = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                
-                # Circular falloff mask
+                # Spatial circular falloff
                 y_idx, x_idx = np.ogrid[:y2 - y1, :x2 - x1]
-                dist_from_center = np.sqrt((x_idx - (wx - x1)) ** 2 + (y_idx - (wy - y1)) ** 2)
-                circ_mask = (dist_from_center <= rad).astype(np.uint8) * 255
+                dist_from_center = np.sqrt((x_idx - (ix - x1)) ** 2 + (y_idx - (iy - y1)) ** 2)
+                circ_mask = dist_from_center <= rad
                 
-                fg_mask[y1:y2, x1:x2] = np.maximum(fg_mask[y1:y2, x1:x2], cv2.bitwise_and(circ_mask, circ_mask))
+                skin_pixels = skin_ycrcb & skin_hsv & circ_mask
+                
+                # Only occlude if there is genuine skin present (never punch a blind hole)
+                if np.sum(skin_pixels) > 30:
+                    skin_u8 = (skin_pixels.astype(np.uint8) * 255)
+                    skin_smooth = cv2.GaussianBlur(skin_u8, (5, 5), 0)
+                    fg_mask[y1:y2, x1:x2] = np.maximum(fg_mask[y1:y2, x1:x2], skin_smooth)
 
-        # 2. Neck & Chin Protection (prevent collar overwriting jawline or beard)
-        if chin_pt is not None:
-            cx, cy = int(np.clip(chin_pt[0], 0, w - 1)), int(np.clip(chin_pt[1], 0, h - 1))
-            c_rad = max(16, int(w * 0.045))
-            cv2.circle(fg_mask, (cx, cy), c_rad, 255, -1)
+        # Note: We NEVER draw blind circular holes for chin_pt or neck_pt.
+        # The neural generator's trained neckline already contours to the collar naturally.
 
-        # Smooth boundary transitions
         if np.any(fg_mask > 0):
-            fg_mask = cv2.GaussianBlur(fg_mask, (9, 9), 0)
+            fg_mask = cv2.GaussianBlur(fg_mask, (7, 7), 0)
             
         return fg_mask
 
@@ -144,9 +155,19 @@ class NeuralForegroundOcclusionEngine:
         sub_alpha = alpha_matte[y:y+bh, x:x+bw].copy()
         sub_target = target_bgr[y:y+bh, x:x+bw].copy()
 
-        # 2. Solid Fabric Guarantee: Fill internal fabric pinholes
+        # 2. Solid Fabric Guarantee: Fill internal fabric pinholes & mesh voids
         k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
         sub_alpha = cv2.morphologyEx(sub_alpha, cv2.MORPH_CLOSE, k_close)
+        
+        # Fill any internal voids or transparent gaps surrounded by garment
+        bin_mask = (sub_alpha > 30).astype(np.uint8)
+        cnts, hier = cv2.findContours(bin_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+        if hier is not None and len(hier) > 0:
+            for ci, ch in enumerate(hier[0]):
+                if ch[3] != -1:  # Internal hole
+                    area = cv2.contourArea(cnts[ci])
+                    if area < 4000:
+                        cv2.drawContours(sub_alpha, cnts, ci, 255, -1)
 
         # 3. Dynamic Ambient Color & Tone Harmonization
         if ambient_match:

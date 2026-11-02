@@ -302,14 +302,16 @@ class SMPL_Regressor:
         else:
             size = base_size * s
 
-        # Accommodate spread arms in upperbody framing so sleeves are never clipped
+        # Accommodate spread arms in upperbody framing while strictly preserving canonical scale
         if len(Joints) > 21:
             elbow_l, elbow_r = Joints[18], Joints[19]
             wrist_l, wrist_r = Joints[20], Joints[21]
             max_x = max(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], Joints[16][0], Joints[17][0])
             min_x = min(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], Joints[16][0], Joints[17][0])
             lateral_half = max(abs(max_x - center_x), abs(center_x - min_x))
-            size = max(size, lateral_half * 1.15)
+            max_allowed_size = (base_size * s) * 1.12
+            target_expanded = max(size, lateral_half * 1.05)
+            size = min(max_allowed_size, target_expanded)
 
         src[0, :] = center + np.array([-size, size], np.float32)
         src[1, :] = center + np.array([-size, -size], np.float32)
@@ -391,24 +393,24 @@ class SMPL_Regressor:
         if arm_elevation > 0.0:
             size = size * (1.0 + arm_elevation * 0.25)
 
-        # Accommodate full lateral arm span across wrists, elbows, and shoulders
-        # Guarantees sleeves are NEVER clipped or amputated when opening arms
+        # Accommodate lateral arm span with bounded expansion (preserves canonical torso scale for Pix2PixHD)
         aspect_ratio = float(new_w) / float(new_h)
+        anatomical_size = size
+        max_allowed_fullbody_size = anatomical_size * 1.15
         if len(Joints) > 21:
             elbow_l, elbow_r = Joints[18], Joints[19]
             wrist_l, wrist_r = Joints[20], Joints[21]
             max_x = max(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], sh_l[0], sh_r[0])
             min_x = min(wrist_l[0], wrist_r[0], elbow_l[0], elbow_r[0], sh_l[0], sh_r[0])
             lateral_half_span = max(abs(max_x - center_x), abs(center_x - min_x))
-            required_half_w = lateral_half_span * 1.18
+            required_half_w = lateral_half_span * 1.12
             size_for_lateral = (required_half_w / aspect_ratio) * 2.0
-            size = max(size, size_for_lateral)
+            size = min(max_allowed_fullbody_size, max(size, size_for_lateral))
 
-            # Accommodate raised arm elevation (overhead gestures)
             head_top = min(Joints[15][1], min_arm_y)
             if head_top < center_y - (size / 2.0):
-                needed_half_h = abs(center_y - head_top) * 1.15
-                size = max(size, needed_half_h * 2.0)
+                needed_half_h = abs(center_y - head_top) * 1.10
+                size = min(max_allowed_fullbody_size, max(size, needed_half_h * 2.0))
 
         center = np.array([center_x, center_y], dtype=np.float32)
 

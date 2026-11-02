@@ -60,6 +60,14 @@ def smooth_overlay_alpha(
     if np.any(sub_alpha > 40):
         k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
         sub_alpha = cv2.morphologyEx(sub_alpha, cv2.MORPH_CLOSE, k_close)
+        bin_mask = (sub_alpha > 30).astype(np.uint8)
+        cnts, hier = cv2.findContours(bin_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+        if hier is not None and len(hier) > 0:
+            for ci, ch in enumerate(hier[0]):
+                if ch[3] != -1:
+                    area = cv2.contourArea(cnts[ci])
+                    if area < 4000:
+                        cv2.drawContours(sub_alpha, cnts, ci, 255, -1)
 
     # 3. Dynamic Ambient Tone & Luminance Harmonization
     if ambient_match:

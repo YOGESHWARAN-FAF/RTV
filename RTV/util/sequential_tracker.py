@@ -61,19 +61,23 @@ class SequentialTryOnTracker:
                         p_pts[valid], pts_now[valid], method=cv2.RANSAC, ransacReprojThreshold=3.0
                     )
                     if M_catchup is not None:
-                        M_catchup_3 = np.vstack([M_catchup, [0, 0, 1]])
-                        new_inv_3 = np.vstack([new_inv, [0, 0, 1]])
-                        new_inv = (M_catchup_3 @ new_inv_3)[:2, :].astype(np.float32)
-                        p_pts = pts_now[valid].reshape(-1, 1, 2)
+                        s_c = np.hypot(M_catchup[0, 0], M_catchup[0, 1])
+                        d_c = np.hypot(M_catchup[0, 2], M_catchup[1, 2])
+                        if 0.85 <= s_c <= 1.15 and d_c <= 80.0:
+                            M_catchup_3 = np.vstack([M_catchup, [0, 0, 1]])
+                            new_inv_3 = np.vstack([new_inv, [0, 0, 1]])
+                            new_inv = (M_catchup_3 @ new_inv_3)[:2, :].astype(np.float32)
+                            p_pts = pts_now[valid].reshape(-1, 1, 2)
             except Exception:
                 pass
         
         # If transitioning from an active running tracker, compute offset for smooth blending
         if self.active_anchor_inv is not None and self.tracker_pts is not None and len(self.tracker_pts) >= 4:
-            # Measure delta between where tracker thought we were vs where the new anchor says we are
-            curr_pos = self.accum_M @ np.array([raw_w * 0.5, raw_h * 0.35, 1.0])
-            anchor_pos = new_inv @ np.array([self.roi_width * 0.5, self.roi_height * 0.35, 1.0])
-            delta = curr_pos[:2] - anchor_pos[:2]
+            # Measure true anatomical delta at tracked chest center
+            prev_chest_frame = self.active_anchor_inv @ np.array([self.roi_width * 0.5, self.roi_height * 0.35, 1.0])
+            curr_chest = self.accum_M @ np.array([prev_chest_frame[0], prev_chest_frame[1], 1.0])
+            new_chest = new_inv @ np.array([self.roi_width * 0.5, self.roi_height * 0.35, 1.0])
+            delta = curr_chest[:2] - new_chest[:2]
             dist = np.hypot(delta[0], delta[1])
             if dist < 60.0:
                 self.transition_offset = delta.astype(np.float32)

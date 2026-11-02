@@ -245,12 +245,21 @@ class DensePoseExtractor(DumpAction):
         if len(result['pred_boxes_XYXY']) == 0:
             return None
 
-        # Synchronize target subject selection with SMPL joints
+        raw_h, raw_w, _ = img.shape
+        # Synchronize target subject selection with SMPL joints or frame center
         if target_center is not None and len(result['pred_boxes_XYXY']) > 1:
             boxes = result['pred_boxes_XYXY'].numpy()
             box_centers = np.stack([(boxes[:, 0] + boxes[:, 2]) * 0.5, (boxes[:, 1] + boxes[:, 3]) * 0.5], axis=1)
             dists = np.linalg.norm(box_centers - np.array(target_center, dtype=np.float32), axis=1)
             target_id = int(np.argmin(dists))
+        elif len(result['pred_boxes_XYXY']) > 1:
+            # Score by center proximity + area: favor central foreground subject
+            boxes = result['pred_boxes_XYXY'].numpy()
+            box_centers_x = (boxes[:, 0] + boxes[:, 2]) * 0.5
+            areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+            dist_to_center = np.abs(box_centers_x - raw_w * 0.5)
+            scores = dist_to_center - np.sqrt(np.maximum(0, areas)) * 0.4
+            target_id = int(np.argmin(scores))
         else:
             target_id = self.get_max_index(result['pred_boxes_XYXY'])
 
@@ -260,7 +269,6 @@ class DensePoseExtractor(DumpAction):
         labels = result['pred_densepose'][target_id].labels
         uv = result['pred_densepose'][target_id].uv
         mask_h, mask_w = labels.shape
-        raw_h, raw_w, _ = img.shape
 
         # convert label to float
         labels = labels.float()

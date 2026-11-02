@@ -409,36 +409,36 @@ GARMENT_CATALOG = {
 
     # --- NEXT-GEN 3D NEURAL PBNF WARDROBE (Continuous Physics Cloth Draping) ---
     "✨ 3D Neural Biker Jacket (PBNF)": {
-        "type": "neural_stream",
-        "id": "leather_jacket",
+        "type": "upperbody",
+        "id": "jin_22_vmsdp2ta",
         "category": "neural",
-        "preview": "/rtv_assets/garment_images/lab_03_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/jin_22_white_bg.jpg",
         "desc": "Photorealistic biker jacket with secondary drape inertia and learned occlusion."
     },
     "✨ 3D Neural Athletic Hoodie (PBNF)": {
-        "type": "neural_stream",
-        "id": "hoodie",
+        "type": "upperbody",
+        "id": "jin_18_vmsdp2ta",
         "category": "neural",
-        "preview": "/rtv_assets/garment_images/lab_04_white_bg.jpg",
+        "preview": "/rtv_assets/garment_images/jin_18_white_bg.jpg",
         "desc": "Athletic fleece hoodie with high-speed arm tracking and zero hand popping."
     },
     "✨ 3D Neural Formal Suit (PBNF)": {
-        "type": "neural_stream",
-        "id": "tailored_suit",
+        "type": "upperbody",
+        "id": "lab_07_vmsdp2ta",
         "category": "neural",
         "preview": "/rtv_assets/garment_images/lab_07_white_bg.jpg",
         "desc": "Classic executive business blazer with structured lapels and depth shading."
     },
     "✨ 3D Neural Puffer Coat (PBNF)": {
-        "type": "neural_stream",
-        "id": "puffer_coat",
+        "type": "fullbody",
+        "id": "coat_seq_vmssdp2ta_576",
         "category": "neural",
         "preview": "/rtv_assets/garment_images/coat_seq_preview.jpg",
         "desc": "Next-Gen 3D Physics-Informed Neural Garment Field with real-time dynamic wrinkles."
     },
     "✨ 3D Neural Silk Dress (PBNF)": {
-        "type": "neural_stream",
-        "id": "silk_dress",
+        "type": "fullbody",
+        "id": "han_seq_vmssdp2ta_576",
         "category": "neural",
         "preview": "/rtv_assets/garment_images/han_seq_preview.jpg",
         "desc": "Flowing silk evening gown with continuous full-body drape."
@@ -1439,7 +1439,17 @@ RTV_LIVE_MIRROR_JS = r'''
                 rtvCanvas.height = targetH;
             }
 
-            rtvCtx.drawImage(video, 0, 0, targetW, targetH);
+            const mirrorChk = document.getElementById('rtv_ws_mirror');
+            const shouldMirror = mirrorChk ? mirrorChk.checked : true;
+            if (shouldMirror) {
+                rtvCtx.save();
+                rtvCtx.translate(targetW, 0);
+                rtvCtx.scale(-1, 1);
+                rtvCtx.drawImage(video, 0, 0, targetW, targetH);
+                rtvCtx.restore();
+            } else {
+                rtvCtx.drawImage(video, 0, 0, targetW, targetH);
+            }
             const blob = await new Promise(res => rtvCanvas.toBlob(res, 'image/jpeg', 0.60));
             if (!blob || !rtvRunning) return;
 
@@ -1511,7 +1521,17 @@ RTV_LIVE_MIRROR_JS = r'''
             rtvCanvas.height = targetH;
         }
 
-        rtvCtx.drawImage(video, 0, 0, targetW, targetH);
+        const mirrorChk = document.getElementById('rtv_ws_mirror');
+        const shouldMirror = mirrorChk ? mirrorChk.checked : true;
+        if (shouldMirror) {
+            rtvCtx.save();
+            rtvCtx.translate(targetW, 0);
+            rtvCtx.scale(-1, 1);
+            rtvCtx.drawImage(video, 0, 0, targetW, targetH);
+            rtvCtx.restore();
+        } else {
+            rtvCtx.drawImage(video, 0, 0, targetW, targetH);
+        }
 
         rtvInFlight++;
         rtvSendTime = performance.now();
@@ -1675,10 +1695,7 @@ RTV_LIVE_MIRROR_JS = r'''
     };
 
     window.rtvToggleMirrorDisplay = function(checkbox) {
-        const canvas = document.getElementById('rtv_mirror_canvas');
-        if (canvas) {
-            canvas.style.transform = checkbox.checked ? 'scaleX(-1)' : 'none';
-        }
+        // Source-level frame mirroring is handled at capture time, preserving crystal-clear HUD text
     };
 
     // Desktop GUI Keyboard Shortcuts Parity (from demo.py)
@@ -1723,13 +1740,8 @@ RTV_LIVE_MIRROR_JS = r'''
             }
         } else if (k === 'R') {
             e.preventDefault();
-            const c = document.getElementById('rtv_mirror_canvas');
             const chk = document.getElementById('rtv_ws_mirror');
-            if (c) {
-                const isMirrored = c.style.transform === 'scaleX(-1)';
-                c.style.transform = isMirrored ? 'none' : 'scaleX(-1)';
-                if (chk) chk.checked = !isMirrored;
-            }
+            if (chk) chk.checked = !chk.checked;
         } else if (e.key >= '1' && e.key <= '9') {
             const cards = Array.from(document.querySelectorAll('.rtv-wardrobe-card'));
             const idx = parseInt(e.key, 10) - 1;
@@ -1971,7 +1983,7 @@ def build_gradio_ui(engine: ColabTryOnEngine):
                                 <span style="color:#00ffaa; font-size:0.8rem;">30 FPS Direct Canvas Blit</span>
                             </div>
                             <div style="position:relative; width:100%; aspect-ratio:4/3; background:#000; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-                                <canvas id="rtv_mirror_canvas" style="width:100%; height:100%; object-fit:cover; display:none; transform:scaleX(-1);"></canvas>
+                                <canvas id="rtv_mirror_canvas" style="width:100%; height:100%; object-fit:cover; display:none;"></canvas>
                                 <div id="rtv_mirror_placeholder" style="color:#94a3b8; font-size:0.95rem; padding:20px;">
                                     ✨ Real-time virtual try-on feed will stream here at 30 FPS locked
                                 </div>

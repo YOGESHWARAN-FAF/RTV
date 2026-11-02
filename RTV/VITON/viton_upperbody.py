@@ -202,7 +202,7 @@ class FrameProcessor:
             vm_support = (roi_vm[:, :, 0] > 0) | (roi_vm[:, :, 1] > 0) | (roi_vm[:, :, 2] > 0)
             dpi_support = (roi_dpi_img[:, :, 0] > 0) | (roi_dpi_img[:, :, 1] > 0) | (roi_dpi_img[:, :, 2] > 0)
             body_support = (vm_support | dpi_support).astype(np.uint8) * 255
-            envelope_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (35, 35))
+            envelope_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (85, 85))
             body_envelope = cv2.dilate(body_support, envelope_k)
 
             # Direct GPU Tensor Preprocessing
@@ -234,7 +234,7 @@ class FrameProcessor:
             raw_alpha_tensor = target_tensor[0, 3, :, :].float()
             solid_alpha = torch.clamp((raw_alpha_tensor - 0.15) / 0.40, 0.0, 1.0)
             roi_alpha = (solid_alpha.cpu().numpy() * 255).astype(np.uint8)
-            roi_alpha[body_envelope == 0] = 0
+            roi_alpha[(body_envelope == 0) & (roi_alpha < 130)] = 0
 
             # Close pinholes and internal gaps to ensure 100% solid fabric
             k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
@@ -324,9 +324,10 @@ class FrameProcessor:
 
         # 2. Dual GPU Parallel Inference: GPU 0 (ROMP/BEV) & GPU 1 (DensePose) run concurrently!
         import concurrent.futures
+        tracked_center = getattr(self.smpl_regressor, 'tracked_subject_center', None)
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             future_smpl = executor.submit(self.smpl_regressor.forward, det_img, True, 1.45, resolution)
-            future_dp = executor.submit(self.densepose_extractor.get_IUV, det_img, False)
+            future_dp = executor.submit(self.densepose_extractor.get_IUV, det_img, False, tracked_center)
             smpl_data = future_smpl.result()
             raw_IUV = future_dp.result()
 
@@ -363,7 +364,7 @@ class FrameProcessor:
         vm_support = (roi_vm[:, :, 0] > 0) | (roi_vm[:, :, 1] > 0) | (roi_vm[:, :, 2] > 0)
         dpi_support = (roi_dpi_img[:, :, 0] > 0) | (roi_dpi_img[:, :, 1] > 0) | (roi_dpi_img[:, :, 2] > 0)
         body_support = (vm_support | dpi_support).astype(np.uint8) * 255
-        envelope_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (35, 35))
+        envelope_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (85, 85))
         body_envelope = cv2.dilate(body_support, envelope_k)
 
         # Direct GPU Tensor Preprocessing
@@ -397,7 +398,7 @@ class FrameProcessor:
         raw_alpha_tensor = target_tensor[0, 3, :, :].float()
         solid_alpha = torch.clamp((raw_alpha_tensor - 0.15) / 0.40, 0.0, 1.0)
         roi_alpha = (solid_alpha.cpu().numpy() * 255).astype(np.uint8)
-        roi_alpha[body_envelope == 0] = 0
+        roi_alpha[(body_envelope == 0) & (roi_alpha < 130)] = 0
 
         # Close pinholes and internal gaps to ensure 100% solid fabric
         k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
@@ -606,13 +607,13 @@ class FrameProcessor:
             raw_alpha = cv2.warpAffine(active_dict['roi_alpha'], self.active_inv, (raw_w, raw_h),
                                        flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
 
-        # 3. Key Landmarks for Collar & Neckline Erasure
+        # 3. Key Landmarks for Hand Protection (None when not detected, never use fake fallbacks)
         chin_pt = active_dict.get('chin_pt', None)
         neck_pt = active_dict.get('neck_pt', None)
-        wrist_l = active_dict.get('wrist_l', np.array([raw_w * 0.25, raw_h * 0.55]))
-        wrist_r = active_dict.get('wrist_r', np.array([raw_w * 0.75, raw_h * 0.55]))
-        sh_l = active_dict.get('sh_l', np.array([raw_w * 0.38, raw_h * 0.28]))
-        sh_r = active_dict.get('sh_r', np.array([raw_w * 0.62, raw_h * 0.28]))
+        wrist_l = active_dict.get('wrist_l', None)
+        wrist_r = active_dict.get('wrist_r', None)
+        sh_l = active_dict.get('sh_l', None)
+        sh_r = active_dict.get('sh_r', None)
 
         # 4. Diagnostics & Adaptive Re-anchoring Metrics
         tr_stats = self.tracker.get_tracking_info()
@@ -623,10 +624,10 @@ class FrameProcessor:
             'scale': tr_stats.get('scale', 1.0),
             'rot_deg': tr_stats.get('rot_deg', 0.0),
             'needs_reanchor': tr_stats.get('needs_reanchor', False),
-            'wrist_l': [float(wrist_l[0]), float(wrist_l[1])],
-            'wrist_r': [float(wrist_r[0]), float(wrist_r[1])],
-            'sh_l': [float(sh_l[0]), float(sh_l[1])],
-            'sh_r': [float(sh_r[0]), float(sh_r[1])],
+            'wrist_l': [float(wrist_l[0]), float(wrist_l[1])] if wrist_l is not None else None,
+            'wrist_r': [float(wrist_r[0]), float(wrist_r[1])] if wrist_r is not None else None,
+            'sh_l': [float(sh_l[0]), float(sh_l[1])] if sh_l is not None else None,
+            'sh_r': [float(sh_r[0]), float(sh_r[1])] if sh_r is not None else None,
         }
 
         # 5. Ultra-Realistic Anti-Aliased Matte Compositing with Ambient Lighting & Hand Preservation
