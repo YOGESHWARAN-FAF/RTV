@@ -1357,25 +1357,6 @@ RTV_LIVE_MIRROR_JS = r'''
 
             window.rtvSendConfig();
 
-            // Tunnel Watchdog: If WebSocket connected but after 1200ms no frames were delivered to the mirror,
-            // it means gradio.live or a proxy tunnel is silently dropping downstream binary WS frames.
-            // Automatically switch to rock-solid HTTP stream blit.
-            setTimeout(() => {
-                if (rtvRunning && rtvDispCount === 0 && !rtvUseHttp) {
-                    console.warn('[RTV] WebSocket connected but 0 frames received (tunnel proxy dropping binary WS). Auto-switching to HTTP Direct Blit...');
-                    rtvUseHttp = true;
-                    if (rtvWs) {
-                        try { rtvWs.close(); } catch(e){}
-                        rtvWs = null;
-                    }
-                    const sBadge = document.getElementById('rtv_ws_status');
-                    if (sBadge) {
-                        sBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
-                        sBadge.style.color = '#00ffaa';
-                    }
-                }
-            }, 1200);
-
             // Continuous camera capture timer (sends frame every 33ms = 30 FPS)
             if (rtvSendTimer) clearInterval(rtvSendTimer);
             rtvSendTimer = setInterval(rtvContinuousSendTick, 33);
@@ -1395,10 +1376,10 @@ RTV_LIVE_MIRROR_JS = r'''
         };
 
         rtvWs.onerror = function(err) {
-            console.warn('[RTV] WebSocket unavailable or blocked by tunnel; automatically switching to HTTP Stream Blit...', err);
+            console.warn('[RTV] WebSocket unavailable; switching to sequential HTTP direct pump...', err);
             rtvUseHttp = true;
             if (statusBadge) {
-                statusBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
+                statusBadge.innerText = '⚡ Live Stream Active (HTTP Pump)';
                 statusBadge.style.color = '#00ffaa';
             }
             if (btnStart) btnStart.disabled = true;
@@ -1409,36 +1390,104 @@ RTV_LIVE_MIRROR_JS = r'''
                 btnStop.style.color = '#ffffff';
                 btnStop.style.cursor = 'pointer';
             }
-            if (!rtvSendTimer) {
-                rtvRunning = true;
-                rtvInFlight = 0;
-                rtvDispCount = 0;
-                rtvLastFpsTime = performance.now();
-                rtvSendTimer = setInterval(rtvContinuousSendTick, 33);
-            }
+            rtvStartHttpPump();
         };
 
         rtvWs.onclose = function(e) {
-            console.log('[RTV] WebSocket closed. Seamless fallback to HTTP streaming active.', e);
-            if (rtvRunning) {
+            console.log('[RTV] WebSocket closed. Seamless fallback to HTTP stream active.', e);
+            if (rtvRunning && !rtvUseHttp) {
                 rtvUseHttp = true;
                 if (statusBadge) {
-                    statusBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
+                    statusBadge.innerText = '⚡ Live Stream Active (HTTP Pump)';
                     statusBadge.style.color = '#00ffaa';
                 }
+                rtvStartHttpPump();
             }
         };
     };
 
+    let rtvHttpPumping = false;
+    function rtvStartHttpPump() {
+        if (!rtvRunning) return;
+        rtvUseHttp = true;
+        if (!rtvHttpPumping) {
+            rtvPumpNextHttpFrame();
+        }
+    }
+
+    async function rtvPumpNextHttpFrame() {
+        if (!rtvRunning || !rtvUseHttp) {
+            rtvHttpPumping = false;
+            return;
+        }
+        rtvHttpPumping = true;
+        const video = document.getElementById('rtv_cam_preview');
+        if (!video || video.readyState < 2) {
+            setTimeout(rtvPumpNextHttpFrame, 30);
+            return;
+        }
+
+        try {
+            const vw = video.videoWidth || 640;
+            const vh = video.videoHeight || 480;
+            const targetW = 480;
+            let targetH = Math.round(targetW * (vh / vw));
+            if (targetH % 2 !== 0) targetH -= 1;
+
+            if (rtvCanvas.width !== targetW || rtvCanvas.height !== targetH) {
+                rtvCanvas.width = targetW;
+                rtvCanvas.height = targetH;
+            }
+
+            rtvCtx.drawImage(video, 0, 0, targetW, targetH);
+            const blob = await new Promise(res => rtvCanvas.toBlob(res, 'image/jpeg', 0.72));
+            if (!blob || !rtvRunning) return;
+
+            const garmentEl = document.getElementById('rtv_ws_garment');
+            const hudEl = document.getElementById('rtv_ws_hud');
+            const skelEl = document.getElementById('rtv_ws_skeleton');
+            const garment = garmentEl ? garmentEl.value : 'Lab Coat 03 (Upper-Body)';
+            const hud = hudEl ? String(hudEl.checked) : 'true';
+            const skeleton = skelEl ? String(skelEl.checked) : 'false';
+            const mode = window.rtvActiveMode || 'LIVE';
+
+            const resp = await fetch('/api/live_mirror_frame', {
+                method: 'POST',
+                headers: {
+                    'X-Garment': garment,
+                    'X-Mode': mode,
+                    'X-Hud': hud,
+                    'X-Skeleton': skeleton
+                },
+                body: blob
+            });
+
+            if (resp.ok && resp.status === 200) {
+                const outBlob = await resp.blob();
+                await renderReceivedBlob(outBlob);
+            }
+        } catch (fetchErr) {
+            // Gracefully ignore aborted/transient fetch errors
+        } finally {
+            if (rtvRunning && rtvUseHttp) {
+                setTimeout(rtvPumpNextHttpFrame, 16);
+            } else {
+                rtvHttpPumping = false;
+            }
+        }
+    }
+
     function rtvContinuousSendTick() {
         if (!rtvRunning) return;
-        if (!rtvUseHttp && (!rtvWs || rtvWs.readyState !== WebSocket.OPEN)) {
-            rtvUseHttp = true;
-            const sBadge = document.getElementById('rtv_ws_status');
-            if (sBadge && rtvRunning) {
-                sBadge.innerText = '⚡ Live 30 FPS Stream Active (HTTP)';
-                sBadge.style.color = '#00ffaa';
-            }
+        if (rtvUseHttp) {
+            rtvStartHttpPump();
+            return;
+        }
+        if (!rtvWs) return;
+        if (rtvWs.readyState === WebSocket.CONNECTING) return;
+        if (rtvWs.readyState !== WebSocket.OPEN) {
+            rtvStartHttpPump();
+            return;
         }
         if (rtvInFlight >= MAX_IN_FLIGHT) {
             if (performance.now() - rtvSendTime > 150) {
@@ -1466,41 +1515,12 @@ RTV_LIVE_MIRROR_JS = r'''
 
         rtvInFlight++;
         rtvSendTime = performance.now();
-        rtvCanvas.toBlob(async function(blob) {
+        rtvCanvas.toBlob(function(blob) {
             if (!blob || !rtvRunning) {
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
                 return;
             }
-            if (rtvUseHttp) {
-                const garmentEl = document.getElementById('rtv_ws_garment');
-                const hudEl = document.getElementById('rtv_ws_hud');
-                const skelEl = document.getElementById('rtv_ws_skeleton');
-                const garment = garmentEl ? garmentEl.value : 'Lab Coat 03 (Upper-Body)';
-                const hud = hudEl ? String(hudEl.checked) : 'true';
-                const skeleton = skelEl ? String(skelEl.checked) : 'false';
-                const mode = window.rtvActiveMode || 'LIVE';
-
-                try {
-                    const resp = await fetch('/api/live_mirror_frame', {
-                        method: 'POST',
-                        headers: {
-                            'X-Garment': garment,
-                            'X-Mode': mode,
-                            'X-Hud': hud,
-                            'X-Skeleton': skeleton
-                        },
-                        body: blob
-                    });
-                    if (resp.ok) {
-                        const outBlob = await resp.blob();
-                        await renderReceivedBlob(outBlob);
-                    }
-                } catch (fetchErr) {
-                    console.warn('[RTV] HTTP stream frame error:', fetchErr);
-                } finally {
-                    rtvInFlight = Math.max(0, rtvInFlight - 1);
-                }
-            } else if (rtvWs && rtvWs.readyState === WebSocket.OPEN) {
+            if (rtvWs && rtvWs.readyState === WebSocket.OPEN) {
                 rtvWs.send(blob);
             } else {
                 rtvInFlight = Math.max(0, rtvInFlight - 1);
@@ -3104,6 +3124,7 @@ def main():
 
     # Mount static directories for instant thumbnail and asset streaming
     from starlette.staticfiles import StaticFiles
+    from starlette.requests import ClientDisconnect
     if os.path.exists("./assets"):
         fastapi_app.mount("/rtv_assets", StaticFiles(directory="./assets"), name="rtv_assets")
     if os.path.exists("./rtv_ckpts"):
@@ -3124,9 +3145,13 @@ def main():
         if recalibrate:
             engine.recalibrate()
 
-        raw_bytes = await request.body()
+        try:
+            raw_bytes = await request.body()
+        except Exception:
+            return Response(status_code=204)
+
         if not raw_bytes:
-            return Response(status_code=400)
+            return Response(status_code=204)
 
         np_arr = np.frombuffer(raw_bytes, np.uint8)
         frame_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
