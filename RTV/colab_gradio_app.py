@@ -81,7 +81,8 @@ import gradio as gr
 
 if torch.cuda.is_available():
 
-    torch.backends.cudnn.benchmark = True
+    # Disable cudnn.benchmark for webcam streaming to prevent internal CUDNN errors on dynamic frame shapes
+    torch.backends.cudnn.benchmark = False
 
 
 

@@ -99,7 +99,7 @@ class BEV(nn.Module):
         model = BEVv1(center_thresh=self.settings.center_thresh).eval()
         model.load_state_dict(torch.load(self.settings.model_path, map_location=self.tdevice,weights_only=True), strict=False)
         model = model.to(self.tdevice)
-        self.model = nn.DataParallel(model)
+        self.model = model
 
     def _initilization_(self):        
         if self.settings.calc_smpl:

@@ -73,7 +73,7 @@ class ROMP(nn.Module):
             model = ROMPv1().eval()
             model.load_state_dict(torch.load(self.settings.model_path, map_location=self.tdevice))
             model = model.to(self.tdevice)
-            self.model = nn.DataParallel(model)
+            self.model = model
         else:
             try:
                 import onnxruntime
